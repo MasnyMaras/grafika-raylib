@@ -1,0 +1,79 @@
+#include "raylib.h"
+#include "rlgl.h"
+#include "raymath.h"
+#include <cmath>
+
+int main() {
+    const int screenWidth = 1960;
+    const int screenHeight = 1084;
+    const float WaistRadius = 0.8f;
+    const float WaistHeight = 3.0f;
+    const float ShoulderWidth = 0.5f;
+    const float ShoulderLength = 0.5f;
+    const float ShoulderHeight = 3.0f;
+    
+    InitWindow(screenWidth, screenHeight, "Robot prosta wersja");
+
+    // Kamera ustawiona na stałe
+    Camera3D camera = { 0 };
+    camera.position = { 10.0f, 10.0f, 10.0f };
+    camera.target = { 0.0f, 0.0f, 0.0f };
+    camera.up = { 0.0f, 1.0f, 0.0f };       
+    camera.fovy = 45.0f;
+    camera.projection = CAMERA_PERSPECTIVE;
+
+    // Model bioder
+    Mesh waistMesh = GenMeshCylinder(WaistRadius, WaistHeight, 48);
+    Model waistModel = LoadModelFromMesh(waistMesh);
+
+    // Model ramienia
+    Mesh ShoulderMesh = GenMeshCube(ShoulderWidth, ShoulderLength, ShoulderHeight);
+    Model ShoulderModel = LoadModelFromMesh(ShoulderMesh);
+
+    // Parametry do obrotu i pozycjonowania
+    float pitch = 0.0f; // Y-Axis
+    //float roll = 0.0f; // X-Axis
+
+    Vector3 WaistPosition = { 0.0f, 0.0f, 0.0f };
+    Vector3 ShoulderPosition = { 0.0f, WaistHeight, (-ShoulderHeight / 2) };
+
+    SetTargetFPS(60);
+
+    while (!WindowShouldClose()) {
+        // Obrót bioder
+        if (IsKeyDown(KEY_A)) pitch += 1.0f;
+        else if (IsKeyDown(KEY_D)) pitch -= 1.0f;
+
+        // === Transformacja bioder ===
+        Matrix waistRotation = MatrixRotateY(DEG2RAD * pitch);
+        Matrix waistTranslation = MatrixTranslate(WaistPosition.x, WaistPosition.y, WaistPosition.z);
+        Matrix waistTransform = MatrixMultiply(waistTranslation, waistRotation);
+        waistModel.transform = waistTransform;
+        Matrix shoulderTranslation = MatrixTranslate(ShoulderPosition.x, 0.0f, ShoulderPosition.z);
+        Matrix ShoulderRotation = MatrixRotateY(DEG2RAD*pitch);
+        Matrix shoulderTranslationBack = MatrixTranslate(-ShoulderPosition.x, 0.0f, -ShoulderPosition.z);
+        Matrix SchoulderTransform = MatrixMultiply(MatrixMultiply(shoulderTranslation, ShoulderRotation), shoulderTranslationBack);
+        ShoulderModel.transform = SchoulderTransform;
+        // Rysowanie
+        BeginDrawing();
+        ClearBackground(RAYWHITE);
+        BeginMode3D(camera);
+        
+        DrawModel(waistModel, WaistPosition, 1.0f, RED); // Biodra
+        DrawModel(ShoulderModel, ShoulderPosition, 1.0f, BLUE); // Ramię
+
+        // Siatka na robocie
+        rlEnableWireMode();
+        DrawModel(waistModel, WaistPosition, 1.0f, GRAY); // Biodra
+        DrawModel(ShoulderModel, ShoulderPosition, 1.0f, GRAY); // Ramię
+        rlDisableWireMode();
+
+        DrawGrid(1000, 1.0f); // Siatka
+        EndMode3D();
+        DrawText("Statyczna kamera - Walec 3D", 10, 10, 20, DARKGRAY);
+        EndDrawing();
+    }
+
+    CloseWindow();
+    return 0;
+}
