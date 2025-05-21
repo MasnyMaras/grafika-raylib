@@ -38,7 +38,7 @@ int main() {
     Model ArmModel = LoadModelFromMesh(ArmMesh);
     // Parametry do obrotu i pozycjonowania
     float pitch = 0.0f; // Y-Axis
-    float pitchArm = 0.0f; //Y-Axis dla przedramienia
+    float rollArm = 0.0f; //Y-Axis dla przedramienia
     float roll = 0.0f; // X-Axis
 
     Vector3 WaistPosition = { 0.0f, 0.0f, 0.0f };
@@ -52,8 +52,8 @@ int main() {
         else if (IsKeyDown(KEY_D)) pitch -= 1.0f;
         if (IsKeyDown(KEY_W)) roll += 1.0f;
         else if (IsKeyDown(KEY_S)) roll -= 1.0f;
-        if (IsKeyDown(KEY_UP)) pitchArm += 1.0f;
-        else if (IsKeyDown(KEY_DOWN)) pitchArm -= 1.0f;
+        if (IsKeyDown(KEY_UP)) rollArm += 1.0f;
+        else if (IsKeyDown(KEY_DOWN)) rollArm -= 1.0f;
 
 
         // === Transformacja bioder ===
@@ -71,6 +71,7 @@ int main() {
         Matrix ArmRotation = MatrixRotateY(DEG2RAD*pitch);
         Matrix ArmTranslationBack = MatrixTranslate(-ArmPosition.x, 0.0f, -ArmPosition.z);
         Matrix ArmTransform = MatrixMultiply(MatrixMultiply(ArmTranslation, ArmRotation), ArmTranslationBack);
+        
         ArmModel.transform = ArmTransform;
         // Dodaj obrót ramienia w osi X (podnoszenie)
         Matrix shoulderLiftOrigin = MatrixTranslate(ShoulderPosition.x, 0.0f, ShoulderPosition.z);
@@ -82,9 +83,16 @@ int main() {
         ShoulderModel.transform = MatrixMultiply(shoulderLiftTransform, SchoulderTransform);
         // Dodaj obrót przedramienia w osi X (podnoszenie)
         Matrix armRaise = MatrixTranslate(0.0f, sin(DEG2RAD*roll)*ShoulderPosition.y, -2*ShoulderPosition.z-cos(DEG2RAD*roll)*ShoulderPosition.y);
-        Matrix armLiftTransform = MatrixMultiply(armRaise, ArmTransform);
-        ArmModel.transform = armLiftTransform;
+        Matrix armRiseTransform = MatrixMultiply(armRaise, ArmTransform);
+        //ArmModel.transform = armRiseTransform;
         //Zginanie przedramienia
+        Matrix ArmLiftOrigin = MatrixTranslate(ArmPosition.x + ArmHeight, 0.0f, ArmPosition.z + ArmHeight );
+        Matrix ArmLiftRotation = MatrixRotateX(DEG2RAD * rollArm);
+        Matrix ArmLiftBack = MatrixTranslate(-ArmPosition.x - ArmHeight, 0.0f, -ArmPosition.z - ArmHeight);
+        Matrix ArmLiftTransform = MatrixMultiply(MatrixMultiply(ArmLiftOrigin,ArmLiftRotation), ArmLiftBack);
+        ArmModel.transform = MatrixMultiply(ArmLiftTransform, armRiseTransform);
+        
+        //ArmModel.transform = ArmLiftTransform;
         // Rysowanie
         BeginDrawing();
         ClearBackground(RAYWHITE);
