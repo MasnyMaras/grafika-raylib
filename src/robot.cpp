@@ -15,7 +15,7 @@ int main() {
     const float ArmLength = 0.25f;
     const float ArmHeight = 2.8f;
     
-    InitWindow(screenWidth, screenHeight, "Robot prosta wersja");
+    InitWindow(screenWidth, screenHeight, "KAROL - The BOKSER");
 
     // Kamera ustawiona na stałe
     Camera3D camera = { 0 };
@@ -44,6 +44,7 @@ int main() {
     Vector3 WaistPosition = { 0.0f, 0.0f, 0.0f };
     Vector3 ShoulderPosition = { 0.0f, WaistHeight, (-ShoulderHeight / 2) };
     Vector3 ArmPosition = { 0.0f, WaistHeight, (-1.45*ShoulderHeight) };
+    
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
@@ -111,7 +112,7 @@ int main() {
 
         DrawGrid(1000, 1.0f); // Siatka
         EndMode3D();
-        DrawText("prowizorka robota", 10, 10, 20, DARKGRAY);
+        DrawText("KAROL - The BOKSER", 10, 10, 20, DARKGRAY);
         EndDrawing();
     }
 
