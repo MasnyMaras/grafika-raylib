@@ -62,10 +62,10 @@ int main() {
         Matrix waistTransform = MatrixMultiply(waistTranslation, waistRotation);
         waistModel.transform = waistTransform;
         // obrot ramienia
-        Matrix shoulderTranslation = MatrixTranslate(ShoulderPosition.x, 0.0f, ShoulderPosition.z);
-        Matrix ShoulderRotation = MatrixRotateY(DEG2RAD*pitch);
-        Matrix shoulderTranslationBack = MatrixTranslate(-ShoulderPosition.x, 0.0f, -ShoulderPosition.z);
-        Matrix SchoulderTransform = MatrixMultiply(MatrixMultiply(shoulderTranslation, ShoulderRotation), shoulderTranslationBack);
+        Matrix shoulderTranslation = MatrixTranslate(ShoulderPosition.x, 0.0f, ShoulderPosition.z); //przesuwamy element na środek układu
+        Matrix ShoulderRotation = MatrixRotateY(DEG2RAD*pitch); // obracamy 
+        Matrix shoulderTranslationBack = MatrixTranslate(-ShoulderPosition.x, 0.0f, -ShoulderPosition.z); // wracamy na pierwotne miejsce
+        Matrix SchoulderTransform = MatrixMultiply(MatrixMultiply(shoulderTranslation, ShoulderRotation), shoulderTranslationBack); //mnożymy obrót w środku, żeby odpowiednio ustawić element -> cofamy do pierwotnego położenia
         // Obrót przedramienia
         Matrix ArmTranslation = MatrixTranslate(ArmPosition.x, 0.0f, ArmPosition.z);
         Matrix ArmRotation = MatrixRotateY(DEG2RAD*pitch);
