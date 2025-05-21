@@ -86,11 +86,11 @@ int main() {
         Matrix armRiseTransform = MatrixMultiply(armRaise, ArmTransform);
         //ArmModel.transform = armRiseTransform;
         //Zginanie przedramienia
-        Matrix ArmLiftOrigin = MatrixTranslate(-ArmPosition.x, 0.0f, -ArmPosition.z);
+        Matrix ArmLiftOrigin = MatrixTranslate(ArmPosition.x + ArmHeight, 0.0f, ArmPosition.z + ArmHeight );
         Matrix ArmLiftRotation = MatrixRotateX(DEG2RAD * rollArm);
-        Matrix ArmLiftBack = MatrixTranslate(ArmPosition.x, 0.0f, ArmPosition.z);
+        Matrix ArmLiftBack = MatrixTranslate(-ArmPosition.x - ArmHeight, 0.0f, -ArmPosition.z - ArmHeight);
         Matrix ArmLiftTransform = MatrixMultiply(MatrixMultiply(ArmLiftOrigin,ArmLiftRotation), ArmLiftBack);
-        ArmModel.transform = MatrixMultiply(armRiseTransform, ArmLiftTransform);
+        ArmModel.transform = MatrixMultiply(ArmLiftTransform, armRiseTransform);
         
         //ArmModel.transform = ArmLiftTransform;
         // Rysowanie
