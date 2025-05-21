@@ -3,6 +3,16 @@
 #include "raymath.h"
 #include <cmath>
 
+#define RLIGHTS_IMPLEMENTATION
+
+#include "rlights.h"
+
+#if defined(PLATFORM_DESKTOP)
+    #define GLSL_VERSION            330
+#else   // PLATFORM_ANDROID, PLATFORM_WEB
+    #define GLSL_VERSION            100
+#endif
+
 int main() {
     const int screenWidth = 1960;
     const int screenHeight = 1084;
@@ -14,7 +24,9 @@ int main() {
     const float ArmWidth = 0.25f;
     const float ArmLength = 0.25f;
     const float ArmHeight = 2.8f;
+    Vector3 LightPos = {1, 6, 2};
     
+    SetConfigFlags(FLAG_MSAA_4X_HINT);  // Enable Multi Sampling Anti Aliasing 4x (if available)
     InitWindow(screenWidth, screenHeight, "KAROL - The BOKSER");
 
     // Kamera ustawiona na stałe
@@ -24,7 +36,17 @@ int main() {
     camera.up = { 0.0f, 1.0f, 0.0f };       
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
-
+    //Wczytanie shaderów
+    Shader shader = LoadShader(TextFormat("C:/raylib/raylib/examples/shaders/resources/shaders/glsl330/lighting.vs", GLSL_VERSION),
+                               TextFormat("C:/raylib/raylib/examples/shaders/resources/shaders/glsl330/lighting.fs", GLSL_VERSION));
+    //Pobranie lokalizaji shaderow
+    shader.locs[SHADER_LOC_VECTOR_VIEW] = GetShaderLocation(shader, "viewPos");
+    //dodanie swiatla otoczenia
+    int ambientLoc = GetShaderLocation(shader, "ambient");
+    SetShaderValue(shader, ambientLoc, (float[4]){ 0.2f, 0.2f, 0.2f, 1.0f }, SHADER_UNIFORM_VEC4);
+    //tworzenie źródła światła
+    Light lights[MAX_LIGHTS] = { 0 };
+    lights[0] = CreateLight(LIGHT_POINT, LightPos, Vector3Zero(), {246, 247, 205}, shader);
     // Model bioder
     Mesh waistMesh = GenMeshCylinder(WaistRadius, WaistHeight, 48);
     Model waistModel = LoadModelFromMesh(waistMesh);
@@ -36,16 +58,27 @@ int main() {
     //model przedramienia
     Mesh ArmMesh = GenMeshCube(ArmWidth, ArmLength, ArmHeight);
     Model ArmModel = LoadModelFromMesh(ArmMesh);
+
+    // Tworzenie podłoża
+    Mesh groundMesh = GenMeshPlane(200.0f, 200.0f, 1, 1); // 20x20 jednostek
+    Model groundModel = LoadModelFromMesh(groundMesh);
+    Vector3 groundPosition = { 0.0f, 0.0f, 0.0f }; // Umieszczenie podłoża pod obiektem
+    
+    
     // Parametry do obrotu i pozycjonowania
     float pitch = 0.0f; // Y-Axis
     float rollArm = 0.0f; //Y-Axis dla przedramienia
     float roll = 0.0f; // X-Axis
-
+    
     Vector3 WaistPosition = { 0.0f, 0.0f, 0.0f };
     Vector3 ShoulderPosition = { 0.0f, WaistHeight, (-ShoulderHeight / 2) };
     Vector3 ArmPosition = { 0.0f, WaistHeight, (-1.45*ShoulderHeight) };
-    
-    SetTargetFPS(60);
+    //aktywowanie shaderów na modelach
+    waistModel.materials[0].shader = shader;
+    ShoulderModel.materials[0].shader = shader;
+    ArmModel.materials[0].shader = shader;
+    //ustawienie FPS
+    SetTargetFPS(120);
 
     while (!WindowShouldClose()) {
         // Obrót bioder
@@ -55,6 +88,8 @@ int main() {
         else if (IsKeyDown(KEY_S)) roll -= 1.0f;
         if (IsKeyDown(KEY_UP)) rollArm += 1.0f;
         else if (IsKeyDown(KEY_DOWN)) rollArm -= 1.0f;
+        lights[0].enabled = true;
+        UpdateLightValues(shader, lights[0]);
 
 
         // === Transformacja bioder ===
@@ -93,24 +128,22 @@ int main() {
         Matrix ArmLiftTransform = MatrixMultiply(MatrixMultiply(ArmLiftOrigin,ArmLiftRotation), ArmLiftBack);
         ArmModel.transform = MatrixMultiply(ArmLiftTransform, armRiseTransform);
         
-        //ArmModel.transform = ArmLiftTransform;
+
         // Rysowanie
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-        BeginMode3D(camera);
+            ClearBackground(RAYWHITE);
+
+            BeginMode3D(camera);
+                
+                BeginShaderMode(shader);
         
-        DrawModel(waistModel, WaistPosition, 1.0f, RED); // Biodra
-        DrawModel(ShoulderModel, ShoulderPosition, 1.0f, BLUE); // Ramię
-        DrawModel(ArmModel, ArmPosition, 1.0f, GREEN); //przedramię
+                    DrawModel(waistModel, WaistPosition, 1.0f, RED); // Biodra
+                    DrawModel(ShoulderModel, ShoulderPosition, 1.0f, BLUE); // Ramię
+                    DrawModel(ArmModel, ArmPosition, 1.0f, GREEN); //przedramię
+                    DrawModel(groundModel, groundPosition, 1.0f, {198, 209, 252}); // podłoże
+                EndShaderMode();
 
-        // Siatka na robocie
-        rlEnableWireMode();
-        DrawModel(waistModel, WaistPosition, 1.0f, GRAY); // Biodra
-        DrawModel(ShoulderModel, ShoulderPosition, 1.0f, GRAY); // Ramię
-        DrawModel(ArmModel, ArmPosition, 1.0f, GRAY); //przedramię
-        rlDisableWireMode();
-
-        DrawGrid(1000, 1.0f); // Siatka
+        //DrawGrid(1000, 1.0f); // Siatka
         EndMode3D();
         DrawText("KAROL - The BOKSER", 10, 10, 20, DARKGRAY);
         EndDrawing();
