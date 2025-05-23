@@ -18,7 +18,7 @@ int main() {
 
     // Włączenie antyaliasingu
     SetConfigFlags(FLAG_MSAA_4X_HINT);
-    InitWindow(screenWidth, screenHeight, "KAROL - The BOKSER");
+    InitWindow(screenWidth, screenHeight, "KAROL - The BOKSER!");
 
     // Kamera ustawiona na stałe
     Camera3D camera = { 0 };
