@@ -55,7 +55,7 @@ public:
     //Pozycje startowe konkretnych elementów
     Vector3 waistPos = { 0.0f, 0.0f, 0.0f };
     Vector3 shoulderPos = { WaistRadius + ShoulderWidth/2, 0.8f*WaistHeight, -ShoulderHeight / 2.0f };
-    Vector3 armPos = { WaistRadius + ShoulderWidth/2, 0.8f*WaistHeight, -1.45f * ShoulderHeight };  // Z = -1.45 * 3.0
+    Vector3 armPos = { WaistRadius + ShoulderWidth + ArmWidth/2, 0.8f*WaistHeight, -1.45f * ShoulderHeight + ArmWidth};  // Z = -1.45 * 3.0
 
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
     Robot(Shader shader) {
@@ -126,13 +126,19 @@ public:
     }
     //inputy do sterowania
     void HandleInput() {
-        if (IsKeyDown(KEY_A)) pitch += 1.0f;
-        if (IsKeyDown(KEY_D)) pitch -= 1.0f;
-        if (IsKeyDown(KEY_W)) roll += 1.0f;
-        if (IsKeyDown(KEY_S)) roll -= 1.0f;
-        if (IsKeyDown(KEY_UP)) rollArm += 1.0f;
-        if (IsKeyDown(KEY_DOWN)) rollArm -= 1.0f;
-    }
+        if (IsKeyDown(KEY_A)){
+            if(pitch<=180) pitch += 1.0f;} 
+        if (IsKeyDown(KEY_D)){
+            if(pitch>=-140) pitch -= 1.0f;}
+        if (IsKeyDown(KEY_W)){
+            if(roll<=133) roll += 1.0f;}
+        if (IsKeyDown(KEY_S)){;
+            if(roll>=-133) roll -= 1.0f;}
+        if (IsKeyDown(KEY_UP)){
+            if(roll<=142) rollArm += 1.0f;}
+        if (IsKeyDown(KEY_DOWN)){
+             if(roll<=142)rollArm -= 1.0f;}
+        }
 };
 
 #endif
