@@ -4,7 +4,14 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "rlights.h"
-
+const float WaistRadius = 0.8f;
+const float WaistHeight = 3.0f;
+const float ShoulderWidth = 0.5f;
+const float ShoulderLength = 0.5f;
+const float ShoulderHeight = 3.0f;
+const float ArmWidth = 0.25f;
+const float ArmLength = 0.25f;
+const float ArmHeight = 2.8f;
 //klasa odpowiedzialna za generowanie, transformacje, rysowanie i unloadowanie poszczególnych części
 class RobotPart {
 public:
@@ -47,19 +54,19 @@ public:
 
     //Pozycje startowe konkretnych elementów
     Vector3 waistPos = { 0.0f, 0.0f, 0.0f };
-    Vector3 shoulderPos = { 0.0f, 3.0f, -1.5f };
-    Vector3 armPos = { 0.0f, 3.0f, -4.35f };  // Z = -1.45 * 3.0
+    Vector3 shoulderPos = { WaistRadius + ShoulderWidth/2, 0.8f*WaistHeight, -ShoulderHeight / 2.0f };
+    Vector3 armPos = { WaistRadius + ShoulderWidth/2, 0.8f*WaistHeight, -1.45f * ShoulderHeight };  // Z = -1.45 * 3.0
 
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
     Robot(Shader shader) {
-        Mesh waistMesh = GenMeshCylinder(0.8f, 3.0f, 48); //generacja siatki bioder z rayliba
+        Mesh waistMesh = GenMeshCylinder(WaistRadius, WaistHeight, 48); //generacja siatki bioder z rayliba
         waist = RobotPart(waistMesh, shader, waistPos); //generacja modelu bioder z klasy RobotPart do której podajemy siatkę, shadera i pozycję
                                                         //I teraz mamy gotowy model bioder, którego możemy używać później ***
 
-        Mesh shoulderMesh = GenMeshCube(0.5f, 0.5f, 3.0f); //generacja siatki ramienia z rayliba
+        Mesh shoulderMesh = GenMeshCube(ShoulderWidth, ShoulderLength, ShoulderHeight); //generacja siatki ramienia z rayliba
         shoulder = RobotPart(shoulderMesh, shader, shoulderPos); //generacja modelu ramienia z klasy RobotPart do której podajemy siatkę, shadera i pozycję
 
-        Mesh armMesh = GenMeshCube(0.25f, 0.25f, 2.8f);  //generacja siatki przedramienia z rayliba
+        Mesh armMesh = GenMeshCube(ArmWidth, ArmLength, ArmHeight);  //generacja siatki przedramienia z rayliba
         arm = RobotPart(armMesh, shader, armPos); //generacja modelu przedramienia z klasy RobotPart do której podajemy siatkę, shadera i pozycję
     }
     //funkcja to praktycznie 1 do 1 to samo co było poprzednio przed główną pętlą while
@@ -92,19 +99,15 @@ public:
         );
 
         // Podnoszenie przedramienia razem z ramieniem
-        Matrix armLift = MatrixTranslate(
-            0.0f,
-            sin(DEG2RAD * roll) * shoulderPos.y,
-            -2 * shoulderPos.z - cos(DEG2RAD * roll) * shoulderPos.y
-        );
+        Matrix armLift = MatrixTranslate(0.0f, sin(DEG2RAD * roll) * shoulderPos.y + sin(DEG2RAD * roll)*0.2f*WaistHeight, -2 * shoulderPos.z - cos(DEG2RAD * roll) * shoulderPos.y - cos(DEG2RAD * roll)*0.2f*WaistHeight);
 
         Matrix armMoved = MatrixMultiply(armLift, armRotY);
 
         // zginanie przedramienia
         Matrix armBend = MatrixMultiply(
-            MatrixTranslate(armPos.x + 2.8f, 0.0f, armPos.z + 2.8f),
+            MatrixTranslate(0.0f , 0.0f, armPos.z + ArmHeight + ShoulderWidth/2),
             MatrixMultiply(MatrixRotateX(DEG2RAD * rollArm),
-            MatrixTranslate(-armPos.x - 2.8f, 0.0f, -armPos.z - 2.8f))
+            MatrixTranslate(0.0f , 0.0f, -armPos.z - ArmHeight - ShoulderWidth/2))
         );
 
         arm.SetTransform(MatrixMultiply(armBend, armMoved)); //podanie zmian do modelu
