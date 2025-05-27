@@ -47,7 +47,7 @@ public:
     float rollArm = 0.0f;   // X-Axis (zginanie przedramienia)
 
     //Pozycje startowe konkretnych elementów
-     Vector3 basepos = {0.0f, 0.0f, 0.0f}; //pozycja bazy robota
+    Vector3 basepos = {0.0f, 0.0f, 0.0f}; //pozycja bazy robota
     Vector3 waistPos = { 0.0f, 23.0f, 0.0f };
     Vector3 shoulderPos = { -6.8f, waistPos.y, 0.0f };
     Vector3 armPos = {10.8f, waistPos.y, 2.5f};
