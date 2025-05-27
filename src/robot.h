@@ -4,14 +4,7 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "rlights.h"
-const float WaistRadius = 0.8f;
-const float WaistHeight = 3.0f;
-const float ShoulderWidth = 0.5f;
-const float ShoulderLength = 0.5f;
-const float ShoulderHeight = 3.0f;
-const float ArmWidth = 0.25f;
-const float ArmLength = 0.25f;
-const float ArmHeight = 2.8f;
+const float ShoulderLength = 27.8f;
 //klasa odpowiedzialna za generowanie, transformacje, rysowanie i unloadowanie poszczególnych części
 class RobotPart {
 public:
@@ -21,13 +14,13 @@ public:
     RobotPart() {}
     
     //Konstruktor - tworzy model, daje materiał do shadera i pozycje obiektu
-    RobotPart(Mesh mesh, Shader shader, Vector3 pos) {      //Każda część robota składa się z wykorzystywana do stworzenia modelu składa się z siatki, shadera i pozycji
-        model = LoadModelFromMesh(mesh);        //na bazie siatki tworzymy model
-        model.materials[0].shader = shader;     //Dajemy elementom "Materiał" shadera - to jak bedzie odbijał światło
-        position = pos;                         //deklaracja pozycji
+    RobotPart(const char* filePath, Shader shader, Vector3 pos) {
+        model = LoadModel(filePath);
+        model.materials[0].shader = shader;
+        position = pos;
     }
     //funkcja do obracania
-    void SetTransform(Matrix transform) {
+    void SetTransform(Matrix transform) { 
         model.transform = transform;
     }
     //funkcja do rysowania
@@ -47,82 +40,91 @@ public:
     RobotPart waist;
     RobotPart shoulder;
     RobotPart arm;
+    RobotPart base;
 
     float pitch = 0.0f;     // Y-Axis (obrót)
     float roll = 0.0f;      // X-Axis (podnoszenie ramienia)
     float rollArm = 0.0f;   // X-Axis (zginanie przedramienia)
 
     //Pozycje startowe konkretnych elementów
-    Vector3 waistPos = { 0.0f, 0.0f, 0.0f };
-    Vector3 shoulderPos = { WaistRadius + ShoulderWidth/2, 0.8f*WaistHeight, -ShoulderHeight / 2.0f };
-    Vector3 armPos = { WaistRadius + ShoulderWidth + ArmWidth/2, 0.8f*WaistHeight, -1.45f * ShoulderHeight + ArmWidth};  // Z = -1.45 * 3.0
+     Vector3 basepos = {0.0f, 0.0f, 0.0f}; //pozycja bazy robota
+    Vector3 waistPos = { 0.0f, 23.0f, 0.0f };
+    Vector3 shoulderPos = { -6.8f, waistPos.y, 0.0f };
+    Vector3 armPos = {10.8f, waistPos.y, 2.5f};
 
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
     Robot(Shader shader) {
-        Mesh waistMesh = GenMeshCylinder(WaistRadius, WaistHeight, 48); //generacja siatki bioder z rayliba
-        waist = RobotPart(waistMesh, shader, waistPos); //generacja modelu bioder z klasy RobotPart do której podajemy siatkę, shadera i pozycję
-                                                        //I teraz mamy gotowy model bioder, którego możemy używać później ***
-
-        Mesh shoulderMesh = GenMeshCube(ShoulderWidth, ShoulderLength, ShoulderHeight); //generacja siatki ramienia z rayliba
-        shoulder = RobotPart(shoulderMesh, shader, shoulderPos); //generacja modelu ramienia z klasy RobotPart do której podajemy siatkę, shadera i pozycję
-
-        Mesh armMesh = GenMeshCube(ArmWidth, ArmLength, ArmHeight);  //generacja siatki przedramienia z rayliba
-        arm = RobotPart(armMesh, shader, armPos); //generacja modelu przedramienia z klasy RobotPart do której podajemy siatkę, shadera i pozycję
+        waist = RobotPart("C:/Development/grafika_raylib/src/Pieza2.obj", shader, waistPos); 
+        base = RobotPart("C:/Development/grafika_raylib/src/Pieza1.obj", shader, basepos);//Baza robota
+        shoulder = RobotPart("C:/Development/grafika_raylib/src/Pieza3.obj", shader, shoulderPos);
+        arm = RobotPart("C:/Development/grafika_raylib/src/Pieza4.obj", shader, armPos);
     }
     //funkcja to praktycznie 1 do 1 to samo co było poprzednio przed główną pętlą while
     void Update() {
-        // Obrót bioder
-        Matrix waistRot = MatrixRotateY(DEG2RAD * pitch);
-        Matrix waistTransform = MatrixMultiply(MatrixTranslate(waistPos.x, waistPos.y, waistPos.z), waistRot);
+        
+        // ustawienie pozycji bazy robota -------------------------
+        base.SetTransform(MatrixRotateX(DEG2RAD*-90.0f)); // Obrót bazy robota o -90 stopni wokół osi X
+        // --------------------------------------------------------
+
+        // Transformacja Bioder -----------------------------------
+        Matrix waistRotY = MatrixRotateY(DEG2RAD * (pitch + 90.0f)); // Obrót bioder wokół osi Y, +90 stopni dla poprawnej orientacji
+        Matrix waistRotX = MatrixRotateX(DEG2RAD * 90.0f); // Obrót o 90 stopni wokół osi X, dla poprawnej orientacji
+        Matrix waistRotation = MatrixMultiply(waistRotX, waistRotY); // Łączenie obrotów
+        Matrix waistTransform = MatrixMultiply(waistRotation, MatrixTranslate(waistPos.x, 0.0f, waistPos.z)); // Transformacja bioder
+        // ostateczna transformacja bioder
         waist.SetTransform(waistTransform); //*** np tutaj odnosimy sie do stworzonych wcześniej bioder i odpowiednio je przerabiamy
+        // --------------------------------------------------------
 
-        // Transformacja Ramienia
-        Matrix shoulderRotY = MatrixMultiply(
-            MatrixTranslate(shoulderPos.x, 0.0f, shoulderPos.z),
-            MatrixMultiply(MatrixRotateY(DEG2RAD * pitch),
-            MatrixTranslate(-shoulderPos.x, 0.0f, -shoulderPos.z))
+        // Transformacja Ramienia -----------------------------------
+        Matrix shoulderRotY = MatrixMultiply(                               // obrot w osi Y
+            MatrixTranslate(shoulderPos.x, shoulderPos.y, shoulderPos.z),
+            MatrixMultiply(MatrixRotateY(DEG2RAD * (pitch + 90.0f)), // obrot, razem z biodrami, +90 dla poprawnego startu
+            MatrixTranslate(-shoulderPos.x, -shoulderPos.y, -shoulderPos.z))
         );
-        //Podnoszenie ramienia
-        Matrix shoulderRotX = MatrixMultiply(
-            MatrixTranslate(shoulderPos.x, 0.0f, shoulderPos.z),
-            MatrixMultiply(MatrixRotateX(DEG2RAD * roll),
-            MatrixTranslate(-shoulderPos.x, 0.0f, -shoulderPos.z))
+        Matrix shoulderRotX = MatrixMultiply(               // obrot w osi X
+            MatrixTranslate(waistPos.x, 0.0f, waistPos.z), //korzystamy z waistPos, bo to jest punkt odniesienia dla ramienia, które jest niesymetryczne
+            MatrixMultiply(MatrixRotateX(DEG2RAD * (-roll - 90.0f)), // podnoszenie i oposzczanie, -90 dla poprawnego startu
+            MatrixTranslate(-waistPos.x, 0.0f, -waistPos.z))
         );
+        // Finalna transformacja dla ramienia
+        Matrix shoulderRotation = MatrixMultiply(shoulderRotX, shoulderRotY); // Łączenie obrotów ramienia
+        shoulder.SetTransform(shoulderRotation); // podanie zmian do modelu
+        // --------------------------------------------------------
 
-        shoulder.SetTransform(MatrixMultiply(shoulderRotX, shoulderRotY)); //Podanie zmian do modelu ramienia
-
-        // Transformacja Przedramienia
+        // Transformacja Przedramienia -----------------------------------
         Matrix armRotY = MatrixMultiply(
             MatrixTranslate(armPos.x, 0.0f, armPos.z),
-            MatrixMultiply(MatrixRotateY(DEG2RAD * pitch),
+            MatrixMultiply(MatrixRotateY(DEG2RAD * (pitch-90.0f)), // obrót przedramienia wokół osi Y, -90 dla poprawnego startu
             MatrixTranslate(-armPos.x, 0.0f, -armPos.z))
         );
 
         // Podnoszenie przedramienia razem z ramieniem
-        Matrix armLift = MatrixTranslate(0.0f, sin(DEG2RAD * roll) * shoulderPos.y + sin(DEG2RAD * roll)*0.2f*WaistHeight, -2 * shoulderPos.z - cos(DEG2RAD * roll) * shoulderPos.y - cos(DEG2RAD * roll)*0.2f*WaistHeight);
-
+        Matrix armLift = MatrixTranslate(0.0f, sin(DEG2RAD * roll)*(ShoulderLength-armPos.x), - cos(DEG2RAD * roll) * (ShoulderLength - armPos.x)); // podnoszenie przedramienia, zależne od kąta roll
         Matrix armMoved = MatrixMultiply(armLift, armRotY);
 
         // zginanie przedramienia
         Matrix armBend = MatrixMultiply(
-            MatrixTranslate(0.0f , 0.0f, armPos.z + ArmHeight + ShoulderWidth/2),
+            MatrixTranslate(0.0f , 0.0f, armPos.z),
             MatrixMultiply(MatrixRotateX(DEG2RAD * rollArm),
-            MatrixTranslate(0.0f , 0.0f, -armPos.z - ArmHeight - ShoulderWidth/2))
+            MatrixTranslate(0.0f, 0.0f, -armPos.z))
         );
 
         arm.SetTransform(MatrixMultiply(armBend, armMoved)); //podanie zmian do modelu
+        // --------------------------------------------------------
     }
     //rysowanie elementów
     void Draw() {
-        waist.Draw(RED);
-        shoulder.Draw(BLUE);
-        arm.Draw(GREEN);
+        base.Draw(LIGHTGRAY);
+        waist.Draw(LIGHTGRAY);
+        shoulder.Draw(LIGHTGRAY);
+        arm.Draw(LIGHTGRAY);
     }
     //unloadowanie elementów
     void Unload() {
         waist.Unload();
         shoulder.Unload();
         arm.Unload();
+        base.Unload();
     }
     //inputy do sterowania
     void HandleInput() {

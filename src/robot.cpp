@@ -22,7 +22,7 @@ int main() {
 
     // Kamera ustawiona na stałe
     Camera3D camera = { 0 };
-    camera.position = { 10.0f, 10.0f, 10.0f };
+    camera.position = { 80.0f, 80.0f, 80.0f };
     camera.target = { 0.0f, 0.0f, 0.0f };
     camera.up = { 0.0f, 1.0f, 0.0f };
     camera.fovy = 45.0f;
@@ -40,7 +40,7 @@ int main() {
     SetShaderValue(shader, GetShaderLocation(shader, "ambient"), (float[4]){0.2f, 0.2f, 0.2f, 1.0f}, SHADER_UNIFORM_VEC4);
 
     //konfiguracja światła
-    Vector3 LightPos = {1, 6, 2}; //źródło światła
+    Vector3 LightPos = {20, 50, 30}; //źródło światła
     Light lights[MAX_LIGHTS] = {0};  //tablica świateł, póki co jest jedno, ale może sie pokusimy o różny rodzaj oświetlenia :)
     lights[0] = CreateLight(LIGHT_POINT, LightPos, Vector3Zero(), WHITE, shader); //parametry światła (punktowe)
 
@@ -61,7 +61,7 @@ int main() {
 
         //zaczynamy rysowanie
         BeginDrawing();
-            ClearBackground(RAYWHITE); //tło
+            ClearBackground(DARKGRAY); //tło
 
             BeginMode3D(camera);    //zaczynamy rysowanie 3D
                 BeginShaderMode(shader);    //zaczynamy rysowaniez shaderami
@@ -70,7 +70,7 @@ int main() {
                 EndShaderMode();    //kończymy rysowanie z shaderami
             EndMode3D();            // i ryswoanie 3D
 
-        DrawText("KAROL - The BOKSER", 10, 10, 20, DARKGRAY); //Tekst w lewym górnym rogu
+        DrawText("KAROL - The BOKSER", 10, 10, 20, WHITE); //Tekst w lewym górnym rogu
         EndDrawing();
     }
     //zwalnianie pamięci
