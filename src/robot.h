@@ -111,6 +111,7 @@ public:
 
         arm.SetTransform(MatrixMultiply(armBend, armMoved)); //podanie zmian do modelu
         // --------------------------------------------------------
+
     }
     //rysowanie elementów
     void Draw() {
@@ -118,6 +119,7 @@ public:
         waist.Draw(LIGHTGRAY);
         shoulder.Draw(LIGHTGRAY);
         arm.Draw(LIGHTGRAY);
+
     }
     //unloadowanie elementów
     void Unload() {
