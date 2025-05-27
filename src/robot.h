@@ -41,7 +41,6 @@ public:
     RobotPart shoulder;
     RobotPart arm;
     RobotPart base;
-    RobotPart hand;
 
     float pitch = 0.0f;     // Y-Axis (obrót)
     float roll = 0.0f;      // X-Axis (podnoszenie ramienia)
@@ -52,7 +51,6 @@ public:
     Vector3 waistPos = { 0.0f, 23.0f, 0.0f };
     Vector3 shoulderPos = { -6.8f, waistPos.y, 0.0f };
     Vector3 armPos = {10.8f, waistPos.y, 2.5f};
-    Vector3 handPos = { shoulderPos.x + armPos.x, waistPos.y, 0.0f }; 
 
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
     Robot(Shader shader) {
@@ -60,7 +58,6 @@ public:
         base = RobotPart("src/Pieza1.obj", shader, basepos);//Baza robota
         shoulder = RobotPart("src/Pieza3.obj", shader, shoulderPos);
         arm = RobotPart("src/Pieza4.obj", shader, armPos);
-        hand = RobotPart("src/Pieza5.obj", shader, handPos); 
     }
     //funkcja to praktycznie 1 do 1 to samo co było poprzednio przed główną pętlą while
     void Update() {
@@ -115,8 +112,6 @@ public:
         arm.SetTransform(MatrixMultiply(armBend, armMoved)); //podanie zmian do modelu
         // --------------------------------------------------------
 
-        // Transformacja Dłoni -----------------------------------
-        hand.SetTransform(MatrixTranslate(handPos.x, handPos.y, handPos.z));
     }
     //rysowanie elementów
     void Draw() {
@@ -124,7 +119,6 @@ public:
         waist.Draw(LIGHTGRAY);
         shoulder.Draw(LIGHTGRAY);
         arm.Draw(LIGHTGRAY);
-        hand.Draw(LIGHTGRAY);
 
     }
     //unloadowanie elementów
@@ -133,7 +127,6 @@ public:
         shoulder.Unload();
         arm.Unload();
         base.Unload();
-        hand.Unload();
     }
     //inputy do sterowania
     void HandleInput() {
