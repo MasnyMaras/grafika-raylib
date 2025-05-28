@@ -57,7 +57,7 @@ public:
         waist = RobotPart("src/Pieza2.obj", shader, waistPos); 
         base = RobotPart("src/Pieza1.obj", shader, basepos);//Baza robota
         shoulder = RobotPart("src/Pieza3.obj", shader, shoulderPos);
-        arm = RobotPart("src/Pieza4.obj", shader, armPos);
+        arm = RobotPart("src/Pieza456.obj", shader, armPos);
     }
     //funkcja to praktycznie 1 do 1 to samo co było poprzednio przed główną pętlą while
     void Update() {
