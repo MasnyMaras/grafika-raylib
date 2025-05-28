@@ -46,6 +46,8 @@ int main() {
 
     //wczytujemy robota z załadowanym wyżej shaderem
     Robot robot(shader);
+    Object cube(shader); //przykładowy obiekt do testowania
+    Object sphere(shader); //przykładowy obiekt do testowania
 
     //generowanie podłoża
     Mesh groundMesh = GenMeshPlane(200.0f, 200.0f, 1, 1);
@@ -57,6 +59,8 @@ int main() {
     while (!WindowShouldClose()) {
         robot.HandleInput();    //klawisze do sterowania
         robot.Update();     //aktualizujemy pozycje i obrot robota
+        cube.Update();      //aktualizujemy pozycje i obrot sześcianu //teraz dodałem
+        sphere.Update(); //aktualizujemy pozycje i obrot kuli //teraz dodałem
         UpdateLightValues(shader, lights[0]);   //akrualizujemy światło
 
         //zaczynamy rysowanie
@@ -66,6 +70,8 @@ int main() {
             BeginMode3D(camera);    //zaczynamy rysowanie 3D
                 BeginShaderMode(shader);    //zaczynamy rysowaniez shaderami
                     robot.Draw();       //rysujemy robota
+                    cube.Draw();        //rysujemy sześcian //teraz dodałem
+                    sphere.Draw();      //rysujemy kulę //teraz dodałem
                     DrawModel(groundModel, groundPosition, 1.0f, {198, 209, 252}); //rysujemy podłoże
                 EndShaderMode();    //kończymy rysowanie z shaderami
             EndMode3D();            // i ryswoanie 3D
@@ -75,6 +81,8 @@ int main() {
     }
     //zwalnianie pamięci
     robot.Unload();
+    cube.Unload(); // teraz dodałem
+    sphere.Unload(); // teraz dodałem
     UnloadModel(groundModel);
     UnloadShader(shader);
     CloseWindow();

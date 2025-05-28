@@ -145,4 +145,53 @@ public:
         }
 };
 
+class ObjectModel {
+public:
+    Model model;
+    Vector3 position;
+
+    ObjectModel() {}
+    ObjectModel(Mesh mesh, Shader shader, Vector3 pos) {
+        model = LoadModelFromMesh(mesh);
+        model.materials[0].shader = shader;
+        position = pos;
+    }
+    void SetTransform(Matrix transform) { 
+        model.transform = transform;
+    }
+    void Draw(Color tint) {
+        DrawModel(model, position, 1.0f, tint);
+    }
+    void Unload() {
+        UnloadModel(model);
+    }
+};
+
+class Object {
+    public: 
+    ObjectModel cube;
+    ObjectModel sphere;
+    Vector3 cubePos = {20.0f, 0.0f, 20.0f}; //pozycja sześcianu
+    Vector3 spherePos = {30.0f, 0.0f, 30.0f}; //pozycja kuli, póki co nieużywana
+
+    Object(Shader shader) {
+        Mesh mesh = GenMeshCube(3.0f, 3.0f, 3.0f); //generowanie sześcianu
+        cube = ObjectModel(mesh, shader, cubePos); //tworzenie modelu sześcianu
+        Mesh sphereMesh = GenMeshSphere(1.5f, 16, 16); //generowanie kuli
+        sphere = ObjectModel(sphereMesh, shader, spherePos); //tworzenie modelu kuli
+    }
+    void Update() {
+        // Można dodać logikę aktualizacji pozycji sześcianu, jeśli jest taka potrzeba
+    }
+    void Draw() {
+        cube.Draw(BLUE); //rysowanie sześcianu
+        sphere.Draw(RED); //rysowanie kuli
+    }
+    void Unload() {
+        cube.Unload(); //zwalnianie pamięci
+        sphere.Unload(); //zwalnianie pamięci
+    }
+};
+
+
 #endif
