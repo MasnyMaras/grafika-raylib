@@ -68,7 +68,7 @@ public:
     Vector3 basepos = {0.0f, 0.0f, 0.0f}; //pozycja bazy robota
     Vector3 waistPos = { 0.0f, 0.0f, 0.0f };
     Vector3 shoulderPos = { 0.0f, 0.0f, 0.0f };
-    Vector3 armPos = {10.8f, waistPos.y, 2.5f};
+    Vector3 armPos = {0.0f, 0.0f, 0.0f};
     Vector3 wrist_A_Pos = {12.3f, waistPos.y, -29.1f }; 
 
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
@@ -88,16 +88,20 @@ public:
 
         
         Matrix waistRotation = MatrixRotateY(DEG2RAD * pitch);
-        Matrix initialWaistOrientation = MatrixMultiply(MatrixRotateX(DEG2RAD*90.0f), MatrixRotateY(DEG2RAD*-90.0f)); 
+        Matrix initialWaistOrientation = MatrixMultiply(MatrixRotateX(DEG2RAD*90.0f), MatrixRotateY(DEG2RAD*90.0f)); 
         Matrix waistTranslation = MatrixTranslate(0.0f, 23.0f, 0.0f);
         Matrix waistTransform = MatrixMultiply(MatrixMultiply(initialWaistOrientation, waistRotation), waistTranslation); 
         waist.SetTransform(waistTransform); 
 
 
         Matrix initialShoulderOrientation = MatrixMultiply(MatrixRotateX(DEG2RAD*-90.0f), MatrixRotateY(DEG2RAD*90.0f)); 
-        Matrix shoulderOffset = MatrixTranslate(0.0f, 23.0f, -10.0f); 
-        Matrix shoulderTransform = MatrixMultiply(initialShoulderOrientation, MatrixMultiply(shoulderOffset, waistRotation));
+        Matrix shoulderOffset = MatrixTranslate(0.0f, 23.0f, 6.8f); 
+        Matrix shoulderRoll = MatrixRotateX(DEG2RAD * -roll);
+        Matrix shoulderTransform = MatrixMultiply(shoulderRoll, MatrixMultiply(initialShoulderOrientation, MatrixMultiply(shoulderOffset, waistRotation)));
         shoulder.SetTransform(shoulderTransform); // Ustawienie transformacji ramienia
+
+        Matrix initialArmOrientation = MatrixRotateZ(DEG2RAD * (0.0f)); 
+        arm.SetTransform(initialArmOrientation);
 
 
 
@@ -170,12 +174,13 @@ public:
 
     //rysowanie elementów
     void Draw() {
-        base.Draw(LIGHTGRAY);
+        //base.Draw(LIGHTGRAY);
         waist.Draw(LIGHTGRAY);
-        waist.DrawAxes(100.0f);
+        //waist.DrawAxes(100.0f);
         shoulder.Draw(LIGHTGRAY);
-        shoulder.DrawAxes(100.0f);
-        //arm.Draw(LIGHTGRAY);
+        //shoulder.DrawAxes(100.0f);
+        arm.Draw(LIGHTGRAY);
+        arm.DrawAxes(100.0f);
         //wrist_A.Draw(LIGHTGRAY); 
 
     }
