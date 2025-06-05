@@ -10,7 +10,7 @@ class RobotPart {
 public:
     Model model; //model częsci
     Vector3 position; //pozycja częsci
-    Matrix GetTransform() const { return model.transform; } //funkcja do pobierania transformacji
+    // Matrix GetTransform() const { return model.transform; } //funkcja do pobierania transformacji
 
     RobotPart() {}
     
@@ -69,7 +69,7 @@ public:
     Vector3 waistPos = { 0.0f, 0.0f, 0.0f };
     Vector3 shoulderPos = { 0.0f, 0.0f, 0.0f };
     Vector3 armPos = {0.0f, 0.0f, 0.0f};
-    Vector3 wrist_A_Pos = {12.3f, waistPos.y, -29.1f }; 
+    Vector3 wrist_A_Pos = {0.0f, 0.0, 0.0f }; 
 
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
     Robot(Shader shader) {
@@ -100,11 +100,20 @@ public:
         Matrix shoulderTransform = MatrixMultiply(shoulderRoll, MatrixMultiply(initialShoulderOrientation, MatrixMultiply(shoulderOffset, waistRotation)));
         shoulder.SetTransform(shoulderTransform); // Ustawienie transformacji ramienia
 
-        Matrix initialArmOrientation = MatrixRotateZ(DEG2RAD * (0.0f)); 
-        arm.SetTransform(initialArmOrientation);
+        Matrix initialArmOrientation = MatrixRotateY(DEG2RAD *-90.0f); 
+        Matrix armOffset = MatrixTranslate(0.0f, 23.0f, 3.8f); 
 
+        Matrix armLift = MatrixTranslate(0.0f, sin(DEG2RAD * roll)*16.5f, -cos(DEG2RAD * roll)*16.5f); // Podnoszenie przedramienia
+        Matrix armBend = MatrixRotateX(DEG2RAD * rollArm); // Zginanie przedramienia
+        Matrix armTransform = MatrixMultiply(armBend, MatrixMultiply(armLift, MatrixMultiply(initialArmOrientation, MatrixMultiply(armOffset, waistRotation)))); // Łączenie transformacji
+        arm.SetTransform(armTransform);
 
+        Matrix initialWrist_A_Orientation = MatrixRotateY(DEG2RAD * -90.0f); // Początkowa orientacja nadgarstka
+        Matrix wrist_A_Offset = MatrixTranslate(31.2f, 23.0f, 5.3f); // Przesunięcie nadgarstka
+        Matrix wrist_A_Transform = MatrixMultiply(initialWrist_A_Orientation, wrist_A_Offset);
+        wrist_A.SetTransform(wrist_A_Transform); // Ustawienie transformacji nadgarstka
 
+       
 
          /*
         // to co było wcześniej 
@@ -175,13 +184,14 @@ public:
     //rysowanie elementów
     void Draw() {
         //base.Draw(LIGHTGRAY);
-        waist.Draw(LIGHTGRAY);
+        //waist.Draw(LIGHTGRAY);
         //waist.DrawAxes(100.0f);
-        shoulder.Draw(LIGHTGRAY);
+        //shoulder.Draw(LIGHTGRAY);
         //shoulder.DrawAxes(100.0f);
         arm.Draw(LIGHTGRAY);
-        arm.DrawAxes(100.0f);
-        //wrist_A.Draw(LIGHTGRAY); 
+        //arm.DrawAxes(100.0f);
+        wrist_A.Draw(LIGHTGRAY); 
+        wrist_A.DrawAxes(100.0f);
 
     }
 
@@ -206,7 +216,8 @@ public:
         if (IsKeyDown(KEY_UP)){
             if(roll<=142) rollArm += 1.0f;}
         if (IsKeyDown(KEY_DOWN)){
-             if(roll<=142)rollArm -= 1.0f;}
+             if(rollArm!=-270)rollArm -= 1.0f;}
+             
         if (IsKeyDown(KEY_RIGHT)){
             if(wristRotation<=90) wristRotation += 1.0f;}
         if (IsKeyDown(KEY_LEFT)){
@@ -231,6 +242,20 @@ public:
     void Draw(Color tint) {
         DrawModel(model, position, 1.0f, tint);
     }
+    void DrawAxes(float axisLength = 10.0f) const {
+        Vector3 worldPos = Vector3Transform(Vector3Zero(), model.transform);
+        Vector3 axisX = Vector3Transform(Vector3{1, 0, 0}, model.transform);
+        Vector3 axisY = Vector3Transform(Vector3{0, 1, 0}, model.transform);
+        Vector3 axisZ = Vector3Transform(Vector3{0, 0, 1}, model.transform);
+
+        axisX = Vector3Scale(Vector3Normalize(Vector3Subtract(axisX, worldPos)), axisLength);
+        axisY = Vector3Scale(Vector3Normalize(Vector3Subtract(axisY, worldPos)), axisLength);
+        axisZ = Vector3Scale(Vector3Normalize(Vector3Subtract(axisZ, worldPos)), axisLength);
+
+        DrawLine3D(worldPos, Vector3Add(worldPos, axisX), RED);
+        DrawLine3D(worldPos, Vector3Add(worldPos, axisY), GREEN);
+        DrawLine3D(worldPos, Vector3Add(worldPos, axisZ), BLUE);
+    }
     void Unload() {
         UnloadModel(model);
     }
@@ -240,8 +265,8 @@ class Object {
     public: 
     ObjectModel cube;
     ObjectModel sphere;
-    Vector3 cubePos = {20.0f, 0.0f, 20.0f}; //pozycja sześcianu
-    Vector3 spherePos = {30.0f, 0.0f, 30.0f}; //pozycja kuli, póki co nieużywana
+    Vector3 cubePos = {0.0f, 0.0f, 00.0f}; //pozycja sześcianu
+    Vector3 spherePos = {00.0f, 0.0f, 00.0f}; //pozycja kuli, póki co nieużywana
 
     Object(Shader shader) {
         Mesh mesh = GenMeshCube(3.0f, 3.0f, 3.0f); //generowanie sześcianu
@@ -250,11 +275,16 @@ class Object {
         sphere = ObjectModel(sphereMesh, shader, spherePos); //tworzenie modelu kuli
     }
     void Update() {
-        // Można dodać logikę aktualizacji pozycji sześcianu, jeśli jest taka potrzeba
+        Matrix cubeTransform = MatrixTranslate(35.0f, 0.0f, 0.0f); //przesunięcie sześcianu
+        Matrix cubeRotation = MatrixRotateY(DEG2RAD * 90.0f); //obrót sześcianu
+        cube.SetTransform(MatrixMultiply(cubeRotation, cubeTransform)); 
+        //cube.SetTransform(MatrixMultiply(cubeTransform, cubeRotation)); //takie tam testowanie
+
     }
     void Draw() {
         cube.Draw(BLUE); //rysowanie sześcianu
-        sphere.Draw(RED); //rysowanie kuli
+        cube.DrawAxes(10.0f); //rysowanie osi sześcianu
+        //sphere.Draw(RED); //rysowanie kuli
     }
     void Unload() {
         cube.Unload(); //zwalnianie pamięci
