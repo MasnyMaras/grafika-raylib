@@ -10,6 +10,7 @@ class RobotPart {
 public:
     Model model; //model częsci
     Vector3 position; //pozycja częsci
+    Matrix GetTransform() const { return model.transform; } //funkcja do pobierania transformacji
 
     RobotPart() {}
     
@@ -31,6 +32,21 @@ public:
     void Unload() {
         UnloadModel(model);
     }
+    //funkcja do rysowania osi
+    void DrawAxes(float axisLength = 10.0f) const {
+        Vector3 worldPos = Vector3Transform(Vector3Zero(), model.transform);
+        Vector3 axisX = Vector3Transform(Vector3{1, 0, 0}, model.transform);
+        Vector3 axisY = Vector3Transform(Vector3{0, 1, 0}, model.transform);
+        Vector3 axisZ = Vector3Transform(Vector3{0, 0, 1}, model.transform);
+
+        axisX = Vector3Scale(Vector3Normalize(Vector3Subtract(axisX, worldPos)), axisLength);
+        axisY = Vector3Scale(Vector3Normalize(Vector3Subtract(axisY, worldPos)), axisLength);
+        axisZ = Vector3Scale(Vector3Normalize(Vector3Subtract(axisZ, worldPos)), axisLength);
+
+        DrawLine3D(worldPos, Vector3Add(worldPos, axisX), RED);
+        DrawLine3D(worldPos, Vector3Add(worldPos, axisY), GREEN);
+        DrawLine3D(worldPos, Vector3Add(worldPos, axisZ), BLUE);
+    }
 };
 
 //reprezentacja całego robota
@@ -41,31 +57,53 @@ public:
     RobotPart shoulder;
     RobotPart arm;
     RobotPart base;
+    RobotPart wrist_A;
 
     float pitch = 0.0f;     // Y-Axis (obrót)
     float roll = 0.0f;      // X-Axis (podnoszenie ramienia)
     float rollArm = 0.0f;   // X-Axis (zginanie przedramienia)
+    float wristRotation = 0.0f; 
 
     //Pozycje startowe konkretnych elementów
     Vector3 basepos = {0.0f, 0.0f, 0.0f}; //pozycja bazy robota
-    Vector3 waistPos = { 0.0f, 23.0f, 0.0f };
-    Vector3 shoulderPos = { -6.8f, waistPos.y, 0.0f };
+    Vector3 waistPos = { 0.0f, 0.0f, 0.0f };
+    Vector3 shoulderPos = { 0.0f, 0.0f, 0.0f };
     Vector3 armPos = {10.8f, waistPos.y, 2.5f};
+    Vector3 wrist_A_Pos = {12.3f, waistPos.y, -29.1f }; 
 
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
     Robot(Shader shader) {
         waist = RobotPart("src/Pieza2.obj", shader, waistPos); 
         base = RobotPart("src/Pieza1.obj", shader, basepos);//Baza robota
         shoulder = RobotPart("src/Pieza3.obj", shader, shoulderPos);
-        arm = RobotPart("src/Pieza456.obj", shader, armPos);
+        arm = RobotPart("src/Pieza4.obj", shader, armPos);
+        wrist_A = RobotPart("src/Pieza5.obj", shader, wrist_A_Pos);
     }
     //funkcja to praktycznie 1 do 1 to samo co było poprzednio przed główną pętlą while
     void Update() {
         
         // ustawienie pozycji bazy robota -------------------------
-        base.SetTransform(MatrixRotateX(DEG2RAD*-90.0f)); // Obrót bazy robota o -90 stopni wokół osi X
+        base.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD*-90.0f), MatrixRotateY(DEG2RAD*90.0f))); // Obrót bazy robota 
         // --------------------------------------------------------
 
+        
+        Matrix waistRotation = MatrixRotateY(DEG2RAD * pitch);
+        Matrix initialWaistOrientation = MatrixMultiply(MatrixRotateX(DEG2RAD*90.0f), MatrixRotateY(DEG2RAD*-90.0f)); 
+        Matrix waistTranslation = MatrixTranslate(0.0f, 23.0f, 0.0f);
+        Matrix waistTransform = MatrixMultiply(MatrixMultiply(initialWaistOrientation, waistRotation), waistTranslation); 
+        waist.SetTransform(waistTransform); 
+
+
+        Matrix initialShoulderOrientation = MatrixMultiply(MatrixRotateX(DEG2RAD*-90.0f), MatrixRotateY(DEG2RAD*90.0f)); 
+        Matrix shoulderOffset = MatrixTranslate(0.0f, 23.0f, -10.0f); 
+        Matrix shoulderTransform = MatrixMultiply(initialShoulderOrientation, MatrixMultiply(shoulderOffset, waistRotation));
+        shoulder.SetTransform(shoulderTransform); // Ustawienie transformacji ramienia
+
+
+
+
+         /*
+        // to co było wcześniej 
         // Transformacja Bioder -----------------------------------
         Matrix waistRotY = MatrixRotateY(DEG2RAD * (pitch + 90.0f)); // Obrót bioder wokół osi Y, +90 stopni dla poprawnej orientacji
         Matrix waistRotX = MatrixRotateX(DEG2RAD * 90.0f); // Obrót o 90 stopni wokół osi X, dla poprawnej orientacji
@@ -112,21 +150,43 @@ public:
         arm.SetTransform(MatrixMultiply(armBend, armMoved)); //podanie zmian do modelu
         // --------------------------------------------------------
 
+        // Transformacja Nadgarstka -----------------------------------
+        Matrix wristRotY = MatrixMultiply(
+            MatrixTranslate(wrist_A_Pos.x, wrist_A_Pos.y, wrist_A_Pos.z),
+            MatrixMultiply(MatrixRotateY(DEG2RAD * (pitch - 90.0f)), // obrót nadgarstka wokół osi Y, -90 dla poprawnego startu
+            MatrixTranslate(-wrist_A_Pos.x, -wrist_A_Pos.y, -wrist_A_Pos.z))
+        );
+
+        Matrix wristRotZ = MatrixMultiply(
+            MatrixTranslate(0.0f, 0.0f, wrist_A_Pos.z - armPos.z), // przesunięcie w osi Z, aby nadgarstek był na końcu przedramienia
+            MatrixMultiply(MatrixRotateZ(DEG2RAD * wristRotation), // obrót nadgarstka wokół osi X
+            MatrixTranslate(0.0f, 0.0f, -(wrist_A_Pos.z - armPos.z))) // przesunięcie w osi Z, aby nadgarstek był na końcu przedramienia
+        );
+
+        wrist_A.SetTransform(MatrixMultiply(wristRotZ, wristRotY)); 
+        */
+        
     }
+
     //rysowanie elementów
     void Draw() {
         base.Draw(LIGHTGRAY);
         waist.Draw(LIGHTGRAY);
+        waist.DrawAxes(100.0f);
         shoulder.Draw(LIGHTGRAY);
-        arm.Draw(LIGHTGRAY);
+        shoulder.DrawAxes(100.0f);
+        //arm.Draw(LIGHTGRAY);
+        //wrist_A.Draw(LIGHTGRAY); 
 
     }
+
     //unloadowanie elementów
     void Unload() {
         waist.Unload();
         shoulder.Unload();
         arm.Unload();
         base.Unload();
+        wrist_A.Unload();
     }
     //inputy do sterowania
     void HandleInput() {
@@ -142,6 +202,10 @@ public:
             if(roll<=142) rollArm += 1.0f;}
         if (IsKeyDown(KEY_DOWN)){
              if(roll<=142)rollArm -= 1.0f;}
+        if (IsKeyDown(KEY_RIGHT)){
+            if(wristRotation<=90) wristRotation += 1.0f;}
+        if (IsKeyDown(KEY_LEFT)){
+            if(wristRotation>=-90) wristRotation -= 1.0f;}
         }
 };
 
@@ -192,6 +256,9 @@ class Object {
         sphere.Unload(); //zwalnianie pamięci
     }
 };
+
+
+
 
 
 #endif
