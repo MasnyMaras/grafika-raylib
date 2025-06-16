@@ -4,6 +4,8 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "rlights.h"
+#include <iostream>
+
 const float ShoulderLength = 27.8f;
 //klasa odpowiedzialna za generowanie, transformacje, rysowanie i unloadowanie poszczególnych części
 class RobotPart {
@@ -26,7 +28,7 @@ public:
     }
     //funkcja do rysowania
     void Draw(Color tint) {
-        DrawModel(model, position, 1.0f, tint);
+        DrawModel(model, {0.0f, 0.0f, 0.0f}, 1.0f, tint);
     }
     //funkcja do unloadowania
     void Unload() {
@@ -71,27 +73,102 @@ public:
     Vector3 armPos = {0.0f, 0.0f, 0.0f};
     Vector3 wrist_A_Pos = {0.0f, 0.0, 0.0f }; 
 
+    struct DHParams {
+        float theta, delta, lambda, alpha;
+    };
+    DHParams dhParams[6];  // parametry dla 6 przegubów
+    Matrix jointTransforms[6];  // wynikowe macierze
+
+    // Funkcja generująca macierz D-H
+    Matrix DHMatrix(float theta, float delta, float lambda, float alpha) {
+        float ct = cosf(theta), st = sinf(theta);
+        float ca = cosf(alpha), sa = sinf(alpha);
+        return Matrix{
+            ct, -st*ca,  st*sa, lambda*ct,
+            st,  ct*ca, -ct*sa, lambda*st,
+            0,      sa,     ca,    delta,
+            0,       0,      0,    1
+        };
+    }
+
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
     Robot(Shader shader) {
-        waist = RobotPart("src/Pieza2.obj", shader, waistPos); 
-        base = RobotPart("src/Pieza1.obj", shader, basepos);//Baza robota
-        shoulder = RobotPart("src/Pieza3.obj", shader, shoulderPos);
-        arm = RobotPart("src/Pieza4.obj", shader, armPos);
+        waist = RobotPart("src/Pieza2_new.obj", shader, waistPos); 
+        base = RobotPart("src/Pieza1_new.obj", shader, basepos);//Baza robota
+        shoulder = RobotPart("src/Pieza3_new.obj", shader, shoulderPos);
+        arm = RobotPart("src/Pieza44.obj", shader, armPos);
         wrist_A = RobotPart("src/Pieza5.obj", shader, wrist_A_Pos);
     }
     //funkcja to praktycznie 1 do 1 to samo co było poprzednio przed główną pętlą while
     void Update() {
         
+         
+        
+        // TEST 2: BIODRO + RAMIĘ
+        
+        // KROK 1: ORIENTACJE POCZĄTKOWE (zgodne z konwencją D-H)
+        //Matrix baseOrientation = MatrixRotateX(DEG2RAD * -90.0f);
+        //Matrix waistOrientation = MatrixRotateX(DEG2RAD * -90.0f);  
+        //Matrix shoulderOrientation = MatrixRotateX(DEG2RAD * 180.0f);
+        //Matrix armOrientation = MatrixRotateX(DEG2RAD * 180.0f);
+
+
+        // Przegub 0: Biodro - obrót wokół Z
+        dhParams[0].theta = DEG2RAD * pitch;    // A/D
+        dhParams[0].delta = 0.0f;                   
+        dhParams[0].alpha = 0.0f;           
+        dhParams[0].lambda = DEG2RAD * 90.0f; 
+        // Przegub 1: Ramię - połączone z biodrem
+        dhParams[1].theta = DEG2RAD * roll;     // W/S
+        dhParams[1].delta = 0.0f;
+        dhParams[1].lambda = 10.0f;                  
+        dhParams[1].alpha  = DEG2RAD * -90.0f;
+
+        // Zerowanie pozostałych   
+        for(int i = 2; i < 6; i++) {
+            dhParams[i].theta = 0.0f;
+            dhParams[i].delta = 0.0f;
+            dhParams[i].lambda = 0.0f;
+            dhParams[i].alpha = 0.0f;
+        }
+
+        // Łańcuchowe mnożenie - TYLKO 2 przeguby
+        // Matrix T = MatrixIdentity();
+        // for(int i = 0; i < 2; i++) {  // TYLKO i < 2
+        //     Matrix A = DHMatrix(dhParams[i].theta, dhParams[i].d, 
+        //                     dhParams[i].a, dhParams[i].alpha);
+        //     T = MatrixMultiply(T, A);
+        //     jointTransforms[i] = T;
+        // }
+
+         // POPRAWNE ŁAŃCUCHOWE MNOŻENIE
+    jointTransforms[0] = DHMatrix(dhParams[0].theta, dhParams[0].delta, 
+                                  dhParams[0].lambda, dhParams[0].alpha);
+    
+    jointTransforms[1] = MatrixMultiply(jointTransforms[0], 
+                                        DHMatrix(dhParams[1].theta, dhParams[1].delta, 
+                                                dhParams[1].lambda, dhParams[1].alpha));
+
+
+        
+        // USTAWIENIE
+       // base.SetTransform(baseOrientation);
+        waist.SetTransform(jointTransforms[0]);
+        shoulder.SetTransform(jointTransforms[1]);
+           
+
+        /* TO CO BYŁO WCZEŚNIEJ PRZED DODANIEM MACIERZY D-H
         // ustawienie pozycji bazy robota -------------------------
         base.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD*-90.0f), MatrixRotateY(DEG2RAD*90.0f))); // Obrót bazy robota 
-        // --------------------------------------------------------
-
         
         Matrix waistRotation = MatrixRotateY(DEG2RAD * pitch);
         Matrix initialWaistOrientation = MatrixMultiply(MatrixRotateX(DEG2RAD*90.0f), MatrixRotateY(DEG2RAD*90.0f)); 
         Matrix waistTranslation = MatrixTranslate(0.0f, 23.0f, 0.0f);
         Matrix waistTransform = MatrixMultiply(MatrixMultiply(initialWaistOrientation, waistRotation), waistTranslation); 
-        waist.SetTransform(waistTransform); 
+        waist.SetTransform(waistTransform);
+        // aktualizacja pozycji biodra robota dla testu
+        //waistPos = Vector3Transform(Vector3Zero(), waistTransform); // Ustawienie pozycji biodra
+        //std::cout << "Waist Position: " << waistPos.x << ", " << waistPos.y << ", " << waistPos.z << std::endl;
 
 
         Matrix initialShoulderOrientation = MatrixMultiply(MatrixRotateX(DEG2RAD*-90.0f), MatrixRotateY(DEG2RAD*90.0f)); 
@@ -107,92 +184,29 @@ public:
         Matrix armBend = MatrixRotateX(DEG2RAD * rollArm); // Zginanie przedramienia
         Matrix armTransform = MatrixMultiply(armBend, MatrixMultiply(armLift, MatrixMultiply(initialArmOrientation, MatrixMultiply(armOffset, waistRotation)))); // Łączenie transformacji
         arm.SetTransform(armTransform);
+        // aktualizacja pozycji ramienia robota
+        //armPos = Vector3Transform(Vector3Zero(), armTransform); 
+        //std::cout << "Arm Position: " << armPos.x << ", " << armPos.y << ", " << armPos.z << std::endl;
 
         Matrix initialWrist_A_Orientation = MatrixRotateY(DEG2RAD * -90.0f); // Początkowa orientacja nadgarstka
         Matrix wrist_A_Offset = MatrixTranslate(31.2f, 23.0f, 5.3f); // Przesunięcie nadgarstka
         Matrix wrist_A_Transform = MatrixMultiply(initialWrist_A_Orientation, wrist_A_Offset);
         wrist_A.SetTransform(wrist_A_Transform); // Ustawienie transformacji nadgarstka
-
-       
-
-         /*
-        // to co było wcześniej 
-        // Transformacja Bioder -----------------------------------
-        Matrix waistRotY = MatrixRotateY(DEG2RAD * (pitch + 90.0f)); // Obrót bioder wokół osi Y, +90 stopni dla poprawnej orientacji
-        Matrix waistRotX = MatrixRotateX(DEG2RAD * 90.0f); // Obrót o 90 stopni wokół osi X, dla poprawnej orientacji
-        Matrix waistRotation = MatrixMultiply(waistRotX, waistRotY); // Łączenie obrotów
-        Matrix waistTransform = MatrixMultiply(waistRotation, MatrixTranslate(waistPos.x, 0.0f, waistPos.z)); // Transformacja bioder
-        // ostateczna transformacja bioder
-        waist.SetTransform(waistTransform); //*** np tutaj odnosimy sie do stworzonych wcześniej bioder i odpowiednio je przerabiamy
-        // --------------------------------------------------------
-
-        // Transformacja Ramienia -----------------------------------
-        Matrix shoulderRotY = MatrixMultiply(                               // obrot w osi Y
-            MatrixTranslate(shoulderPos.x, shoulderPos.y, shoulderPos.z),
-            MatrixMultiply(MatrixRotateY(DEG2RAD * (pitch + 90.0f)), // obrot, razem z biodrami, +90 dla poprawnego startu
-            MatrixTranslate(-shoulderPos.x, -shoulderPos.y, -shoulderPos.z))
-        );
-        Matrix shoulderRotX = MatrixMultiply(               // obrot w osi X
-            MatrixTranslate(waistPos.x, 0.0f, waistPos.z), //korzystamy z waistPos, bo to jest punkt odniesienia dla ramienia, które jest niesymetryczne
-            MatrixMultiply(MatrixRotateX(DEG2RAD * (-roll - 90.0f)), // podnoszenie i oposzczanie, -90 dla poprawnego startu
-            MatrixTranslate(-waistPos.x, 0.0f, -waistPos.z))
-        );
-        // Finalna transformacja dla ramienia
-        Matrix shoulderRotation = MatrixMultiply(shoulderRotX, shoulderRotY); // Łączenie obrotów ramienia
-        shoulder.SetTransform(shoulderRotation); // podanie zmian do modelu
-        // --------------------------------------------------------
-
-        // Transformacja Przedramienia -----------------------------------
-        Matrix armRotY = MatrixMultiply(
-            MatrixTranslate(armPos.x, 0.0f, armPos.z),
-            MatrixMultiply(MatrixRotateY(DEG2RAD * (pitch-90.0f)), // obrót przedramienia wokół osi Y, -90 dla poprawnego startu
-            MatrixTranslate(-armPos.x, 0.0f, -armPos.z))
-        );
-
-        // Podnoszenie przedramienia razem z ramieniem
-        Matrix armLift = MatrixTranslate(0.0f, sin(DEG2RAD * roll)*(ShoulderLength-armPos.x), - cos(DEG2RAD * roll) * (ShoulderLength - armPos.x)); // podnoszenie przedramienia, zależne od kąta roll
-        Matrix armMoved = MatrixMultiply(armLift, armRotY);
-
-        // zginanie przedramienia
-        Matrix armBend = MatrixMultiply(
-            MatrixTranslate(0.0f , 0.0f, armPos.z),
-            MatrixMultiply(MatrixRotateX(DEG2RAD * rollArm),
-            MatrixTranslate(0.0f, 0.0f, -armPos.z))
-        );
-
-        arm.SetTransform(MatrixMultiply(armBend, armMoved)); //podanie zmian do modelu
-        // --------------------------------------------------------
-
-        // Transformacja Nadgarstka -----------------------------------
-        Matrix wristRotY = MatrixMultiply(
-            MatrixTranslate(wrist_A_Pos.x, wrist_A_Pos.y, wrist_A_Pos.z),
-            MatrixMultiply(MatrixRotateY(DEG2RAD * (pitch - 90.0f)), // obrót nadgarstka wokół osi Y, -90 dla poprawnego startu
-            MatrixTranslate(-wrist_A_Pos.x, -wrist_A_Pos.y, -wrist_A_Pos.z))
-        );
-
-        Matrix wristRotZ = MatrixMultiply(
-            MatrixTranslate(0.0f, 0.0f, wrist_A_Pos.z - armPos.z), // przesunięcie w osi Z, aby nadgarstek był na końcu przedramienia
-            MatrixMultiply(MatrixRotateZ(DEG2RAD * wristRotation), // obrót nadgarstka wokół osi X
-            MatrixTranslate(0.0f, 0.0f, -(wrist_A_Pos.z - armPos.z))) // przesunięcie w osi Z, aby nadgarstek był na końcu przedramienia
-        );
-
-        wrist_A.SetTransform(MatrixMultiply(wristRotZ, wristRotY)); 
         */
-        
     }
 
     //rysowanie elementów
     void Draw() {
-        //base.Draw(LIGHTGRAY);
-        //waist.Draw(LIGHTGRAY);
-        //waist.DrawAxes(100.0f);
-        //shoulder.Draw(LIGHTGRAY);
-        //shoulder.DrawAxes(100.0f);
-        arm.Draw(LIGHTGRAY);
-        //arm.DrawAxes(100.0f);
-        wrist_A.Draw(LIGHTGRAY); 
-        wrist_A.DrawAxes(100.0f);
-
+        // base.Draw(LIGHTGRAY);
+         //base.DrawAxes(30.0f); //rysowanie bazy robota
+        waist.Draw(LIGHTGRAY);
+        waist.DrawAxes(30.0f);
+        shoulder.Draw(LIGHTGRAY);
+        shoulder.DrawAxes(30.0f);
+         //arm.Draw(LIGHTGRAY);
+         //arm.DrawAxes(30.0f);
+        // wrist_A.Draw(LIGHTGRAY); 
+        // wrist_A.DrawAxes(100.0f);
     }
 
     //unloadowanie elementów
@@ -205,23 +219,36 @@ public:
     }
     //inputy do sterowania
     void HandleInput() {
-        if (IsKeyDown(KEY_A)){
-            if(pitch<=180) pitch += 1.0f;} 
-        if (IsKeyDown(KEY_D)){
-            if(pitch>=-140) pitch -= 1.0f;}
-        if (IsKeyDown(KEY_W)){
-            if(roll<=133) roll += 1.0f;}
-        if (IsKeyDown(KEY_S)){;
-            if(roll>=-133) roll -= 1.0f;}
-        if (IsKeyDown(KEY_UP)){
-            if(roll<=142) rollArm += 1.0f;}
-        if (IsKeyDown(KEY_DOWN)){
-             if(rollArm!=-270)rollArm -= 1.0f;}
+        // if (IsKeyDown(KEY_A)){
+        //     if(pitch<=180) pitch += 1.0f;} 
+        // if (IsKeyDown(KEY_D)){
+        //     if(pitch>=-140) pitch -= 1.0f;}
+        // if (IsKeyDown(KEY_W)){
+        //     if(roll<=133) roll += 1.0f;}
+        // if (IsKeyDown(KEY_S)){;
+        //     if(roll>=-133) roll -= 1.0f;}
+        // if (IsKeyDown(KEY_UP)){
+        //     if(roll<=142) rollArm += 1.0f;}
+        // if (IsKeyDown(KEY_DOWN)){
+        //      if(rollArm!=-270)rollArm -= 1.0f;}
              
-        if (IsKeyDown(KEY_RIGHT)){
-            if(wristRotation<=90) wristRotation += 1.0f;}
-        if (IsKeyDown(KEY_LEFT)){
-            if(wristRotation>=-90) wristRotation -= 1.0f;}
+        // if (IsKeyDown(KEY_RIGHT)){
+        //     if(wristRotation<=90) wristRotation += 1.0f;}
+        // if (IsKeyDown(KEY_LEFT)){
+        //     if(wristRotation>=-90) wristRotation -= 1.0f;}
+        // 
+         if (IsKeyDown(KEY_A)){
+             pitch += 1.0f;} 
+        if (IsKeyDown(KEY_D)){
+             pitch -= 1.0f;}
+        if (IsKeyDown(KEY_W)){
+            roll += 1.0f;}
+        if (IsKeyDown(KEY_S)){;
+            roll -= 1.0f;}
+        if (IsKeyDown(KEY_UP)){
+            rollArm += 1.0f;}
+        if (IsKeyDown(KEY_DOWN)){
+             rollArm -= 1.0f;}
         }
 };
 
@@ -282,8 +309,8 @@ class Object {
 
     }
     void Draw() {
-        cube.Draw(BLUE); //rysowanie sześcianu
-        cube.DrawAxes(10.0f); //rysowanie osi sześcianu
+        //cube.Draw(BLUE); //rysowanie sześcianu
+        //cube.DrawAxes(10.0f); //rysowanie osi sześcianu
         //sphere.Draw(RED); //rysowanie kuli
     }
     void Unload() {

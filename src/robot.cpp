@@ -13,8 +13,8 @@
 int main() {
 
     //rozmiar okna
-    const int screenWidth = 1960;
-    const int screenHeight = 1084;
+    const int screenWidth = 1500;
+    const int screenHeight = 800;
 
     // Włączenie antyaliasingu
     SetConfigFlags(FLAG_MSAA_4X_HINT);
