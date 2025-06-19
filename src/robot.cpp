@@ -4,6 +4,7 @@
 #include "rlights.h"
 #define RLIGHTS_IMPLEMENTATION
 #include "robot.h"
+#include "object.h"
 #if defined(PLATFORM_DESKTOP)
     #define GLSL_VERSION 330
 #else
@@ -22,7 +23,7 @@ int main() {
 
     // Kamera ustawiona na stałe
     Camera3D camera = { 0 };
-    camera.position = { 80.0f, 80.0f, 80.0f };
+    camera.position = { 80.0f, 80.0f, 80.0f };  //80
     camera.target = { 0.0f, 0.0f, 0.0f };
     camera.up = { 0.0f, 1.0f, 0.0f };
     camera.fovy = 45.0f;
@@ -46,21 +47,24 @@ int main() {
 
     //wczytujemy robota z załadowanym wyżej shaderem
     Robot robot(shader);
-    Object cube(shader); //przykładowy obiekt do testowania
-    Object sphere(shader); //przykładowy obiekt do testowania
+    Object object(shader); //przykładowy obiekt do testowania
+    object.Initialize(); //inicjalizacja sześcianu
 
     //generowanie podłoża
     Mesh groundMesh = GenMeshPlane(200.0f, 200.0f, 1, 1);
     Model groundModel = LoadModelFromMesh(groundMesh);
     Vector3 groundPosition = { 0.0f, 0.0f, 0.0f };
+    Matrix endEffectorTransform = MatrixIdentity();
+
 
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
         robot.HandleInput();    //klawisze do sterowania
+        object.Input(); //klawisz do chwytania sześcianu
         robot.Update();     //aktualizujemy pozycje i obrot robota
-        cube.Update();      //aktualizujemy pozycje i obrot sześcianu //teraz dodałem
-        sphere.Update(); //aktualizujemy pozycje i obrot kuli //teraz dodałem
+            endEffectorTransform = robot.jointTransforms[6]; //aktualizujemy transformację końcówki robota
+        object.Update(endEffectorTransform);
         UpdateLightValues(shader, lights[0]);   //akrualizujemy światło
 
         //zaczynamy rysowanie
@@ -70,8 +74,7 @@ int main() {
             BeginMode3D(camera);    //zaczynamy rysowanie 3D
                 BeginShaderMode(shader);    //zaczynamy rysowaniez shaderami
                     robot.Draw();       //rysujemy robota
-                    cube.Draw();        //rysujemy sześcian //teraz dodałem
-                    sphere.Draw();      //rysujemy kulę //teraz dodałem
+                    object.Draw();        //rysujemy sześcian //teraz dodałem
                     DrawModel(groundModel, groundPosition, 1.0f, {198, 209, 252}); //rysujemy podłoże
                 EndShaderMode();    //kończymy rysowanie z shaderami
             EndMode3D();            // i ryswoanie 3D
@@ -81,8 +84,7 @@ int main() {
     }
     //zwalnianie pamięci
     robot.Unload();
-    cube.Unload(); // teraz dodałem
-    sphere.Unload(); // teraz dodałem
+    object.Unload(); // teraz dodałem
     UnloadModel(groundModel);
     UnloadShader(shader);
     CloseWindow();
