@@ -42,9 +42,12 @@ int main() {
 
     //konfiguracja światła
     Vector3 LightPos = {20, 50, 30}; //źródło światła
-    Light lights[MAX_LIGHTS] = {0};  //tablica świateł, póki co jest jedno, ale może sie pokusimy o różny rodzaj oświetlenia :)
+    Light lights[MAX_LIGHTS] = {0, 1, 2};  //tablica świateł, póki co jest jedno, ale może sie pokusimy o różny rodzaj oświetlenia :)
     lights[0] = CreateLight(LIGHT_POINT, LightPos, Vector3Zero(), WHITE, shader); //parametry światła (punktowe)
-
+    lights[1] = CreateLight(LIGHT_POINT, (Vector3){-25.0f, 30.0f, -50.0f}, Vector3Zero(), (Color){128, 128, 40, 255}, shader); // światło punktowe, które świeci z drugiej strony
+    lights[2] = CreateLight(LIGHT_POINT, (Vector3){50.0f, 30.0f, -50.0f}, Vector3Zero(), (Color){80, 130, 230, 255}, shader);
+    bool yellowLightOn = true;
+    bool blueLightOn = true;
     //wczytujemy robota z załadowanym wyżej shaderem
     Robot robot(shader);
     Object object(shader); //przykładowy obiekt do testowania
@@ -66,6 +69,8 @@ int main() {
             endEffectorTransform = robot.jointTransforms[6]; //aktualizujemy transformację końcówki robota
         object.Update(endEffectorTransform);
         UpdateLightValues(shader, lights[0]);   //akrualizujemy światło
+        UpdateLightValues(shader, lights[1]);   //akrualizujemy światło
+        UpdateLightValues(shader, lights[2]);   //akrualizujemy światło
 
         if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
             Vector2 mouseDelta = GetMouseDelta();
@@ -101,7 +106,7 @@ int main() {
                     (Vector2){ 300.0f, 300.0f },        // Rozmiar podłoża
                     LIGHTGRAY);  //kolor podłoża
 
-                float gridY = -23.9f;
+                float gridY = -23.8f;
                 int gridSize = 15;
                 float spacing = 10.0f;
                 for (int i = -gridSize; i <= gridSize; i++)
@@ -115,6 +120,23 @@ int main() {
                     robot.Draw();       //rysujemy robota
                     object.Draw();        //rysujemy sześcian //teraz dodałem
                     DrawModel(groundModel, groundPosition, 1.0f, {198, 209, 252}); //rysujemy podłoże
+                    if (IsKeyPressed(KEY_B)) {
+                        blueLightOn = !blueLightOn;
+                        if (blueLightOn) {
+                            lights[2].color = (Color){80, 130, 230, 255}; // włącz
+                        } else {
+                            lights[2].color = (Color){0, 0, 0, 0}; // wyłącz
+                        }
+                    }
+                    
+                    if (IsKeyPressed(KEY_N)) {
+                        yellowLightOn = !yellowLightOn;
+                        if (yellowLightOn) {
+                            lights[1].color = (Color){128, 128, 40, 255}; // włącz
+                        } else {
+                            lights[1].color = (Color){0, 0, 0, 0}; // wyłącz
+                        }
+                    }
                 EndShaderMode();    //kończymy rysowanie z shaderami
             EndMode3D();            // i ryswoanie 3D
 
