@@ -229,6 +229,10 @@ public:
         wrist_B.Unload();
         wrist_C.Unload();
     }
+    bool IsAboveGround(Matrix transform, float minY = -23.0f) {
+        Vector3 worldPos = Vector3Transform(Vector3Zero(), transform);
+        return worldPos.y >= minY;
+    }
     //inputy do sterowania
     void HandleInput() {
         // if (IsKeyDown(KEY_A)){
@@ -252,28 +256,88 @@ public:
              pitch += 1.0f;} 
         if (IsKeyDown(KEY_D)){
              pitch -= 1.0f;}
-        if (IsKeyDown(KEY_W)){  // pozmieniane w różnych miejscach plusy z minusami 
-            roll -= 1.0f;}
-        if (IsKeyDown(KEY_S)){;
-            roll += 1.0f;}
-        if (IsKeyDown(KEY_UP)){
-            rollArm -= 1.0f;}
-        if (IsKeyDown(KEY_DOWN)){
-             rollArm += 1.0f;}
-        if (IsKeyDown(KEY_RIGHT)){
-            wrist_A_Rotation -= 1.0f;}
-        if (IsKeyDown(KEY_LEFT)){
-            wrist_A_Rotation += 1.0f;}
-        if (IsKeyDown(KEY_I)){
-            wrist_B_Rotation -= 1.0f;} 
-        if (IsKeyDown(KEY_K)){
-            wrist_B_Rotation += 1.0f;}
-        if (IsKeyDown(KEY_J)){
-            wrist_C_Rotation += 1.0f;} 
-        if (IsKeyDown(KEY_L)){
-            wrist_C_Rotation -= 1.0f;}
+        if (IsKeyDown(KEY_W)) {
+            roll -= 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) { // np. końcówka ramienia
+                roll += 1.0f;
+                Update();
+            }
         }
-};
+        if (IsKeyDown(KEY_S)) {
+            roll += 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) {
+                roll -= 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_UP)) {
+            rollArm -= 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) {
+                rollArm += 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_DOWN)) {
+            rollArm += 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) {
+                rollArm -= 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_RIGHT)){
+            wrist_A_Rotation -= 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) { // np. końcówka ramienia
+                wrist_A_Rotation += 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_LEFT)){
+            wrist_A_Rotation += 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) {
+                wrist_A_Rotation -= 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_I)){
+            wrist_B_Rotation -= 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) { // np. końcówka ramienia
+                wrist_B_Rotation += 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_K)){
+            wrist_B_Rotation += 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) {
+                wrist_B_Rotation -= 1.0f;
+                Update();
+            }
+        } 
+        if (IsKeyDown(KEY_J)){
+            wrist_C_Rotation += 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) {
+                wrist_C_Rotation -= 1.0f;
+                Update();
+            } 
+        }
+        if (IsKeyDown(KEY_L)){
+            wrist_C_Rotation -= 1.0f;
+            Update();
+            if (!IsAboveGround(jointTransforms[6])) {
+                wrist_C_Rotation += 1.0f;
+                Update();
+            }
+        }
+    }
+};  
 
 
 #endif
