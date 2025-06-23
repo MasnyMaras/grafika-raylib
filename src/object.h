@@ -1,10 +1,10 @@
 #ifndef OBJECT_H
 #define OBJECT_H
-
 #include "raylib.h"
 #include "raymath.h"
 //#include "rlights.h"  chat kazał wywalić
 #include <iostream>
+
 
 class ObjectModel {
 public:
@@ -46,7 +46,7 @@ class Object {
     public: 
     ObjectModel cube;
     Vector3 cubePos = {0.0f, 0.0f, 0.0f}; //pozycja sześcianu
-    bool grab = false; 
+    bool grab = false;
 
     Object(Shader shader) {
         Mesh mesh = GenMeshCube(3.0f, 3.0f, 3.0f); //generowanie sześcianu
@@ -62,11 +62,8 @@ class Object {
             cube.SetTransform(cubeTransform);
             cubePos = {cubeTransform.m12, cubeTransform.m13, cubeTransform.m14}; //aktualizacja pozycji sześcianu
         }
-
-         
-
-
     }
+
     bool CheckContact(Matrix endEffectorPos){
         //std::cout << dd << std::endl; //debugowanie stanu chwytania
         if (fabs(cubePos.x - endEffectorPos.m12) < 3.0f && 
@@ -89,6 +86,11 @@ class Object {
             grab = !grab; //przełączanie stanu chwytania sześcianu 
         }
     }
+    
+    bool IsGrabbed()  {
+        return grab; //zwracanie stanu chwytania
+    }
+    
 };
 
 #endif

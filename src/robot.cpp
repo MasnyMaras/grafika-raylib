@@ -63,7 +63,7 @@ int main() {
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
-        robot.HandleInput();    //klawisze do sterowania
+        robot.HandleInput(object.IsGrabbed());    //klawisze do sterowania
         object.Input(); //klawisz do chwytania sześcianu
         robot.Update();     //aktualizujemy pozycje i obrot robota
             endEffectorTransform = robot.jointTransforms[6]; //aktualizujemy transformację końcówki robota
