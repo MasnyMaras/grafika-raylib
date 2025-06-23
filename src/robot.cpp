@@ -22,13 +22,13 @@ int main() {
     InitWindow(screenWidth, screenHeight, "KAROL - The BOKSER!");
 
     // Kamera ustawiona na stałe
+    float camAngleX = 45.0f * DEG2RAD;  // obrót poziomy
+    float camAngleY = 45.0f * DEG2RAD;  // obrót pionowy
+    float camDistance = 120.0f;         // odległość od środka
+    Vector3 camTarget = { 0.0f, 0.0f, 0.0f };  // punkt, wokół którego kamera orbituje
     Camera3D camera = { 0 };
-    camera.position = { 80.0f, 80.0f, 80.0f };  //80
-    camera.target = { 0.0f, 0.0f, 0.0f };
-    camera.up = { 0.0f, 1.0f, 0.0f };
     camera.fovy = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
-
     //wcytywanie shaderów do óswietlania
     Shader shader = LoadShader(
         TextFormat("C:/raylib/raylib/examples/shaders/resources/shaders/glsl330/lighting.vs", GLSL_VERSION),
@@ -67,11 +67,50 @@ int main() {
         object.Update(endEffectorTransform);
         UpdateLightValues(shader, lights[0]);   //akrualizujemy światło
 
+        if (IsMouseButtonDown(MOUSE_RIGHT_BUTTON)) {
+            Vector2 mouseDelta = GetMouseDelta();
+            camAngleX += mouseDelta.x * 0.003f;
+            camAngleY -= mouseDelta.y * 0.003f;
+
+            // Ograniczenie pionowego kąta (aby nie przeskoczyć przez zenit)
+            if (camAngleY < 0.1f) camAngleY = 0.1f;
+            if (camAngleY > PI - 0.1f) camAngleY = PI - 0.1f;
+        }
+
+        // OPCJONALNY ZOOM SCROLLEM
+        camDistance -= GetMouseWheelMove() * 2.0f;
+        if (IsMouseButtonPressed(MOUSE_RIGHT_BUTTON)) DisableCursor();
+        if (IsMouseButtonReleased(MOUSE_RIGHT_BUTTON)) EnableCursor();
+        if (camDistance < 10.0f) camDistance = 10.0f;
+        if (camDistance > 300.0f) camDistance = 300.0f;
+
+        // AKTUALIZACJA POZYCJI KAMERY NA PODSTAWIE KĄTÓW I ODLEGŁOŚCI
+        camera.position.x = camTarget.x + camDistance * sinf(camAngleY) * cosf(camAngleX);
+        camera.position.y = camTarget.y + camDistance * cosf(camAngleY);
+        camera.position.z = camTarget.z + camDistance * sinf(camAngleY) * sinf(camAngleX);
+        camera.target = camTarget;
+        camera.up = (Vector3){ 0.0f, 1.0f, 0.0f };
+
+
         //zaczynamy rysowanie
         BeginDrawing();
-            ClearBackground(DARKGRAY); //tło
+            ClearBackground(WHITE); //tło
 
             BeginMode3D(camera);    //zaczynamy rysowanie 3D
+                DrawPlane((Vector3){ 0.0f, -24.0f, 0.0f },    // Pozycja środka
+                    (Vector2){ 300.0f, 300.0f },        // Rozmiar podłoża
+                    LIGHTGRAY);  //kolor podłoża
+
+                float gridY = -23.9f;
+                int gridSize = 15;
+                float spacing = 10.0f;
+                for (int i = -gridSize; i <= gridSize; i++)
+                {
+                    // Linie wzdłuż osi Z
+                    DrawLine3D((Vector3){ i * spacing, gridY, -gridSize * spacing },(Vector3){ i * spacing, gridY,  gridSize * spacing },BLACK);
+                    // Linie wzdłuż osi X
+                    DrawLine3D((Vector3){ -gridSize * spacing, gridY, i * spacing },(Vector3){  gridSize * spacing, gridY, i * spacing },BLACK);
+                }
                 BeginShaderMode(shader);    //zaczynamy rysowaniez shaderami
                     robot.Draw();       //rysujemy robota
                     object.Draw();        //rysujemy sześcian //teraz dodałem
