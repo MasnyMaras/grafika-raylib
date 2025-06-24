@@ -265,10 +265,15 @@ int main() {
         }
             
         if (GuiButton((Rectangle){200, 310, 70, 25}, "Grab Toggle")) {
+            if(gripperType){
+                robot.ToggleClamps();
+            }
             object.grab = !object.grab;
         }            
         if (GuiButton((Rectangle){200, 345, 70, 25}, "Chwytak")) {
-                
+            gripperType = !gripperType;
+            object.grab = false; // resetowanie stanu chwytania
+            robot.clampsOpen = true; // jeśli gripperType jest true, to otwieramy chwytak
        }
 
         DrawText("KAROL - The BOKSER", 10, 10, 20, WHITE); //Tekst w lewym górnym rogu
