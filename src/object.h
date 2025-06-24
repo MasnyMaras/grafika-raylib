@@ -45,41 +45,75 @@ public:
 class Object {
     public: 
     ObjectModel cube;
+    ObjectModel sphere;
     Vector3 cubePos = {0.0f, 0.0f, 0.0f}; //pozycja sześcianu
+    Vector3 spherePos = {0.0f, 0.0f, 0.0f}; //pozycja kuli
     bool grab = false;
+    bool grabbingCube = false;    
+    bool grabbingSphere = false;
 
     Object(Shader shader) {
         Mesh mesh = GenMeshCube(3.0f, 3.0f, 3.0f); //generowanie sześcianu
         cube = ObjectModel(mesh, shader, cubePos); //tworzenie modelu sześcianu
+        Mesh sphereMesh = GenMeshSphere(1.5f, 16, 16); //generowanie kuli
+        sphere = ObjectModel(sphereMesh, shader, spherePos); //tworzenie modelu kuli
     }
     void Initialize() {
         cube.SetTransform(MatrixTranslate(20.0f, 0.0f, -20.0f)); 
         cubePos = {20.0f, 0.0f, -20.0f};
+        sphere.SetTransform(MatrixTranslate(20.0f, 0.0f, 20.0f));
+        spherePos = {20.0f, 0.0f, 20.0f};
     }
-    void Update(Matrix endEffectorPos) {
-        if (CheckContact(endEffectorPos)) {
-            Matrix cubeTransform = MatrixMultiply(MatrixTranslate(0.0f, 1.7f, 0.0f), endEffectorPos); 
-            cube.SetTransform(cubeTransform);
-            cubePos = {cubeTransform.m12, cubeTransform.m13, cubeTransform.m14}; //aktualizacja pozycji sześcianu
+
+    void Update(Matrix endEffectorPos, bool gripperType) {
+        if (grab) {
+            // Jeśli jeszcze nic nie trzymamy, sprawdź co można chwycić
+            if (!grabbingCube && !grabbingSphere) {
+                if (IsNearCube(endEffectorPos)) {
+                    grabbingCube = true;  // Zacznij trzymać kostkę
+                }
+                else if (IsNearSphere(endEffectorPos) && gripperType) {
+                    grabbingSphere = true;  // Zacznij trzymać kulę
+                }
+            }
+            
+            // Poruszaj tylko tym obiektem który trzymamy
+            if (grabbingCube) {
+                Matrix cubeTransform = MatrixMultiply(MatrixTranslate(0.0f, 1.8f, 0.0f), endEffectorPos); 
+                cube.SetTransform(cubeTransform);
+                cubePos = {cubeTransform.m12, cubeTransform.m13, cubeTransform.m14};
+            }
+            if (grabbingSphere && gripperType) {
+                Matrix sphereTransform = MatrixMultiply(MatrixTranslate(0.0f, 1.8f, 0.0f), endEffectorPos); 
+                sphere.SetTransform(sphereTransform);
+                spherePos = {sphereTransform.m12, sphereTransform.m13, sphereTransform.m14};
+            }
+        } else {
+            // Gdy grab = false, puść wszystko
+            grabbingCube = false;
+            grabbingSphere = false;
         }
     }
 
-    bool CheckContact(Matrix endEffectorPos){
-        //std::cout << dd << std::endl; //debugowanie stanu chwytania
-        if (fabs(cubePos.x - endEffectorPos.m12) < 3.0f && 
-            fabs(cubePos.y - endEffectorPos.m13) < 3.0f && 
-            fabs(cubePos.z - endEffectorPos.m14) < 3.0f && 
-            grab) { //sprawdzenie kontaktu z końcówką robota
-            return true; //kontakt z końcówką robota
-        }
-        return false;
+    bool IsNearCube(Matrix endEffectorPos) {
+        return (fabs(cubePos.x - endEffectorPos.m12) < 3.5f && 
+                fabs(cubePos.y - endEffectorPos.m13) < 3.5f && 
+                fabs(cubePos.z - endEffectorPos.m14) < 3.5f);
     }
+
+    bool IsNearSphere(Matrix endEffectorPos) {
+        return (fabs(spherePos.x - endEffectorPos.m12) < 3.5f && 
+                fabs(spherePos.y - endEffectorPos.m13) < 3.5f && 
+                fabs(spherePos.z - endEffectorPos.m14) < 3.5f);
+    }
+
     void Draw() {
         cube.Draw(BLUE); //rysowanie sześcianu
-        cube.DrawAxes(10.0f); //rysowanie osi sześcianu
+        sphere.Draw(RED); //rysowanie kuli
     }
     void Unload() {
         cube.Unload(); //zwalnianie pamięci
+        sphere.Unload(); //zwalnianie pamięci
     }
     void Input() {
         if (IsKeyPressed(KEY_SPACE)) {
