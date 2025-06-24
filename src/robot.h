@@ -54,6 +54,9 @@ public:
 //reprezentacja całego robota
 class Robot {
 public:
+    float slider_angles[7] = {0}; //tablica do przechowywania kątów suwaków, nie używana obecnie
+    bool use_slider_controls = true; //flaga do używania suwaków
+
     
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
     RobotPart waist;

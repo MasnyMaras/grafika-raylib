@@ -3,6 +3,8 @@
 #include "raymath.h"
 #include "rlights.h"
 #define RLIGHTS_IMPLEMENTATION
+#define RAYGUI_IMPLEMENTATION
+#include "raygui.h"
 #include "robot.h"
 #include "object.h"
 #include "record.h"
@@ -158,6 +160,8 @@ int main() {
                     // Linie wzdłuż osi X
                     DrawLine3D((Vector3){ -gridSize * spacing, gridY, i * spacing },(Vector3){  gridSize * spacing, gridY, i * spacing },BLACK);
                 }
+
+                
                 BeginShaderMode(shader);    //zaczynamy rysowaniez shaderami
                     robot.Draw();       //rysujemy robota
                     object.Draw();        //rysujemy sześcian //teraz dodałem
@@ -182,6 +186,26 @@ int main() {
                 EndShaderMode();    //kończymy rysowanie z shaderami
             EndMode3D();            // i ryswoanie 3D
 
+        //rysowanie GUI
+        if (robot.use_slider_controls) {
+            GuiPanel((Rectangle){20, 30, 265, 300}, "Sterowanie sliderami");
+            GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.pitch, -180, 360);
+            GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.roll, -90, 90);
+            GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.rollArm, -180, 45);
+            GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.wrist_A_Rotation, -90, 90);
+            GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.wrist_B_Rotation, -90, 90);
+            GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.wrist_C_Rotation, -90, 90);
+        }
+        else {
+            GuiPanel((Rectangle){20, 30, 265, 300}, "Sterowanie sliderami");
+            GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.pitch, -180, 360);
+            GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.roll, -90, 90);
+            GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.rollArm, -180, 45);
+            GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.wrist_A_Rotation, -90, 90);
+            GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.wrist_B_Rotation, -90, 90);
+            GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.wrist_C_Rotation, -90, 90);
+        }
+        
         DrawText("KAROL - The BOKSER", 10, 10, 20, WHITE); //Tekst w lewym górnym rogu
         EndDrawing();
     }
