@@ -63,6 +63,8 @@ public:
     float wrist_B_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_B_Rotation
     float wrist_C_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_C_Rotation
 
+    bool clampsOpen = true;
+
     
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
     RobotPart waist;
