@@ -196,8 +196,17 @@ int main() {
         GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.slider_angles[5], -90, 90);
 
 
-        // TODO: zapisanie poprzedniej wartości przy naciśnięciu LPM i ewentualny powrót do tego
+
         robot.pitch = robot.slider_angles[0];
+        // zapisanie poprzednich wartości kątów, aby móc je przywrócić
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+            robot.pitch_prev = robot.pitch;
+            robot.roll_prev = robot.roll;
+            robot.rollArm_prev = robot.rollArm;
+            robot.wrist_A_Rotation_prev = robot.wrist_A_Rotation;
+            robot.wrist_B_Rotation_prev = robot.wrist_B_Rotation;
+            robot.wrist_C_Rotation_prev = robot.wrist_C_Rotation;
+        }
         if (robot.IsAboveGround(robot.jointTransforms[6], object.grab)) {
             robot.rollArm = robot.slider_angles[2];
             robot.wrist_A_Rotation = robot.slider_angles[3];
@@ -205,7 +214,6 @@ int main() {
             robot.wrist_C_Rotation = robot.slider_angles[5];
             robot.roll = robot.slider_angles[1];
         } else{
-            // Jeśli końcówka robota jest poniżej podłoża, resetujemy wartości
             robot.rollArm = robot.rollArm_prev;
             robot.wrist_A_Rotation = robot.wrist_A_Rotation_prev;
             robot.wrist_B_Rotation = robot.wrist_B_Rotation_prev;
@@ -247,7 +255,8 @@ int main() {
             
         if (GuiButton((Rectangle){200, 310, 70, 25}, "Grab Toggle")) {
             object.grab = !object.grab;
-        }            if (GuiButton((Rectangle){200, 345, 70, 25}, "Chwytak")) {
+        }            
+        if (GuiButton((Rectangle){200, 345, 70, 25}, "Chwytak")) {
                 
        }
 

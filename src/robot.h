@@ -54,14 +54,14 @@ public:
 //reprezentacja całego robota
 class Robot {
 public:
-    float slider_angles[6] = {0}; //tablica do przechowywania kątów suwaków, nie używana obecnie
+    float slider_angles[6] = {0}; //tablica do przechowywania kątów suwaków
     bool use_slider_controls = true; //flaga do używania suwaków
-    const float pitch_prev = 0.0f; // zapamiętanie poprzedniego pitcha
-    const float roll_prev = 0.0f; // zapamiętanie poprzedniego rolla
-    const float rollArm_prev = 0.0f; // zapamiętanie poprzedniego rollArm
-    const float wrist_A_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_A_Rotation
-    const float wrist_B_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_B_Rotation
-    const float wrist_C_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_C_Rotation
+    float pitch_prev = 0.0f; // zapamiętanie poprzedniego pitcha
+    float roll_prev = 0.0f; // zapamiętanie poprzedniego rolla
+    float rollArm_prev = 0.0f; // zapamiętanie poprzedniego rollArm
+    float wrist_A_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_A_Rotation
+    float wrist_B_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_B_Rotation
+    float wrist_C_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_C_Rotation
 
     
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
