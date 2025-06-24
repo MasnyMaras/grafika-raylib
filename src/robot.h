@@ -55,6 +55,7 @@ public:
 class Robot {
 public:
 
+<<<<<<< HEAD
     float slider_angles[6] = {0}; //tablica do przechowywania kątów suwaków
     bool use_slider_controls = true; //flaga do używania suwaków
     float pitch_prev = 0.0f; // zapamiętanie poprzedniego pitcha
@@ -66,6 +67,10 @@ public:
 
     bool clampsOpen = true;
 
+=======
+    bool clampsOpen = true;
+    
+>>>>>>> 92e1c8edaa74460f95f0c62848a77fa4f4d3a02a
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
     RobotPart waist;
     RobotPart shoulder;
@@ -204,7 +209,10 @@ public:
 
         
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 92e1c8edaa74460f95f0c62848a77fa4f4d3a02a
         base.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD * -90.0f), MatrixTranslate(0.0f, -24.0f, 0.0f)));    // -24 to odległość poniżej zera aby baza była pod biodrem
         waist.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD *90.0f), jointTransforms[1]));
         shoulder.SetTransform(MatrixMultiply(MatrixTranslate(-17.0f, 0.0f, 0.0f), jointTransforms[2])); 
