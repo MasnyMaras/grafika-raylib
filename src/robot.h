@@ -55,7 +55,6 @@ public:
 class Robot {
 public:
 
-<<<<<<< HEAD
     float slider_angles[6] = {0}; //tablica do przechowywania kątów suwaków
     bool use_slider_controls = true; //flaga do używania suwaków
     float pitch_prev = 0.0f; // zapamiętanie poprzedniego pitcha
@@ -67,10 +66,6 @@ public:
 
     bool clampsOpen = true;
 
-=======
-    bool clampsOpen = true;
-    
->>>>>>> 92e1c8edaa74460f95f0c62848a77fa4f4d3a02a
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
     RobotPart waist;
     RobotPart shoulder;
