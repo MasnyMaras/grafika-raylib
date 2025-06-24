@@ -7,6 +7,7 @@
 #include "object.h"
 #include <iostream>
 
+
 //klasa odpowiedzialna za generowanie, transformacje, rysowanie i unloadowanie poszczególnych części
 class RobotPart {
 public:
@@ -248,17 +249,17 @@ public:
                 pitch -= 1.0f;}
             }
         if (IsKeyDown(KEY_W)) {
-            if (roll > -90.0f) { // ograniczenie do 90 stopni
+            if (roll > -90.0f) { // ograniczenie do -90 stopni
                 roll -= 1.0f;
             }
             Update();
-            if (!IsAboveGround(jointTransforms[6], grab)) { // np. końcówka ramienia
+            if (!IsAboveGround(jointTransforms[6], grab)) {
                 roll += 1.0f;
                 Update();
             }
         }
         if (IsKeyDown(KEY_S)) {
-            if(roll < 90.0f) { // ograniczenie do -90 stopni
+            if(roll < 90.0f) { // ograniczenie do 90 stopni
                 roll += 1.0f;
             }
             Update();
@@ -268,7 +269,7 @@ public:
             }
         }
         if (IsKeyDown(KEY_UP)) {
-            if(rollArm > -180.0f) { // ograniczenie do 90 stopni
+            if(rollArm > -180.0f) { // ograniczenie do -180 stopni
                 rollArm -= 1.0f;
             }
             Update();
@@ -278,7 +279,7 @@ public:
             }
         }
         if (IsKeyDown(KEY_DOWN)) {
-            if(rollArm < 45.0f) { // ograniczenie do -90 stopni
+            if(rollArm < 45.0f) { // ograniczenie do 45 stopni
                 rollArm += 1.0f;
             }
             Update();
@@ -288,17 +289,17 @@ public:
             }
         }
         if (IsKeyDown(KEY_RIGHT)){
-            if (wrist_A_Rotation > -90.0f) { // ograniczenie do 180 stopni
+            if (wrist_A_Rotation > -90.0f) { // ograniczenie do -90 stopni
                 wrist_A_Rotation -= 1.0f;
             }
             Update();
-            if (!IsAboveGround(jointTransforms[6], grab)) { // np. końcówka ramienia
+            if (!IsAboveGround(jointTransforms[6], grab)) {
                 wrist_A_Rotation += 1.0f;
                 Update();
             }
         }
         if (IsKeyDown(KEY_LEFT)){
-            if (wrist_A_Rotation < 90.0f) { // ograniczenie do -90 stopni
+            if (wrist_A_Rotation < 90.0f) { // ograniczenie do 90 stopni
                 wrist_A_Rotation += 1.0f;
             }
             Update();
@@ -308,11 +309,11 @@ public:
             }
         }
         if (IsKeyDown(KEY_I)){
-            if( wrist_B_Rotation > -90.0f) { // ograniczenie do 180 stopni
+            if( wrist_B_Rotation > -90.0f) { // ograniczenie do -90 stopni
                 wrist_B_Rotation -= 1.0f;
             }
             Update();
-            if (!IsAboveGround(jointTransforms[6], grab)) { // np. końcówka ramienia
+            if (!IsAboveGround(jointTransforms[6], grab)) {
                 wrist_B_Rotation += 1.0f;
                 Update();
             }

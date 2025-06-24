@@ -14,8 +14,8 @@
 int main() {
 
     //rozmiar okna
-    const int screenWidth = 1500;
-    const int screenHeight = 800;
+    const int screenWidth = 1920;
+    const int screenHeight = 1080;
 
     // Włączenie antyaliasingu
     SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -115,6 +115,7 @@ int main() {
                     DrawLine3D((Vector3){ i * spacing, gridY, -gridSize * spacing },(Vector3){ i * spacing, gridY,  gridSize * spacing },BLACK);
                     // Linie wzdłuż osi X
                     DrawLine3D((Vector3){ -gridSize * spacing, gridY, i * spacing },(Vector3){  gridSize * spacing, gridY, i * spacing },BLACK);
+                    
                 }
                 BeginShaderMode(shader);    //zaczynamy rysowaniez shaderami
                     robot.Draw();       //rysujemy robota
@@ -139,7 +140,6 @@ int main() {
                     }
                 EndShaderMode();    //kończymy rysowanie z shaderami
             EndMode3D();            // i ryswoanie 3D
-
         DrawText("KAROL - The BOKSER", 10, 10, 20, WHITE); //Tekst w lewym górnym rogu
         EndDrawing();
     }
