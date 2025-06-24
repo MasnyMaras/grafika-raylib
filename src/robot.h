@@ -55,8 +55,22 @@ public:
 class Robot {
 public:
 
+<<<<<<< HEAD
+    float slider_angles[6] = {0}; //tablica do przechowywania kątów suwaków
+    bool use_slider_controls = true; //flaga do używania suwaków
+    float pitch_prev = 0.0f; // zapamiętanie poprzedniego pitcha
+    float roll_prev = 0.0f; // zapamiętanie poprzedniego rolla
+    float rollArm_prev = 0.0f; // zapamiętanie poprzedniego rollArm
+    float wrist_A_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_A_Rotation
+    float wrist_B_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_B_Rotation
+    float wrist_C_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_C_Rotation
+
+    bool clampsOpen = true;
+
+=======
     bool clampsOpen = true;
     
+>>>>>>> 92e1c8edaa74460f95f0c62848a77fa4f4d3a02a
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
     RobotPart waist;
     RobotPart shoulder;
@@ -184,8 +198,21 @@ public:
         jointTransforms[3] = MatrixMultiply(T_34, jointTransforms[2]); // T_04
         jointTransforms[4] = MatrixMultiply(T_45, jointTransforms[3]); // T_05 
         jointTransforms[5] = MatrixMultiply(T_56, jointTransforms[4]); // T_06  
-        jointTransforms[6] = MatrixMultiply(T_67, jointTransforms[5]); // T_07                     
+        jointTransforms[6] = MatrixMultiply(T_67, jointTransforms[5]); // T_07      
 
+        slider_angles[0] = pitch;    
+        slider_angles[1] = roll;
+        slider_angles[2] = rollArm; 
+        slider_angles[3] = wrist_A_Rotation; 
+        slider_angles[4] = wrist_B_Rotation; 
+        slider_angles[5] = wrist_C_Rotation; 
+
+        
+
+<<<<<<< HEAD
+
+=======
+>>>>>>> 92e1c8edaa74460f95f0c62848a77fa4f4d3a02a
         base.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD * -90.0f), MatrixTranslate(0.0f, -24.0f, 0.0f)));    // -24 to odległość poniżej zera aby baza była pod biodrem
         waist.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD *90.0f), jointTransforms[1]));
         shoulder.SetTransform(MatrixMultiply(MatrixTranslate(-17.0f, 0.0f, 0.0f), jointTransforms[2])); 
