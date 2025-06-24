@@ -188,22 +188,90 @@ int main() {
 
         //rysowanie GUI
         if (robot.use_slider_controls) {
-            GuiPanel((Rectangle){20, 30, 265, 300}, "Sterowanie sliderami");
+            GuiPanel((Rectangle){20, 30, 265, 350}, "Sterowanie sliderami");
             GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.slider_angles[0], -180, 360);
             GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.slider_angles[1], -90, 90);
             GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.slider_angles[2], -180, 45);
             GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.slider_angles[3], -90, 90);
             GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.slider_angles[4], -90, 90);
             GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.slider_angles[5], -90, 90);
+
+            if (GuiButton((Rectangle){30, 310, 70, 25}, "Toggle REC")) {
+                if (!recorder.isRecording) {
+                    recorder.StartRecording(robot.jointTransforms);
+                } else {
+                    recorder.StopRecording();
+                }
+            }
+            
+            if (GuiButton((Rectangle){30, 345, 70, 25}, "B")) {
+                blueLightOn = !blueLightOn;
+                        if (blueLightOn) {
+                            lights[2].color = (Color){80, 130, 230, 255}; // włącz
+                        } else {
+                            lights[2].color = (Color){0, 0, 0, 0}; // wyłącz
+                        }
+            }
+            
+            if (GuiButton((Rectangle){115, 310, 70, 25}, "Playback")) {
+                recorder.StartPlayback();
+            }
+            
+            if (GuiButton((Rectangle){115, 345, 70, 25}, "Y")) {
+                yellowLightOn = !yellowLightOn;
+                        if (yellowLightOn) {
+                            lights[1].color = (Color){128, 128, 40, 255}; // włącz
+                        } else {
+                            lights[1].color = (Color){0, 0, 0, 0}; // wyłącz
+                        }
+            }
+            
+            if (GuiButton((Rectangle){200, 310, 70, 25}, "Grab Toggle")) {
+                object.grab = !object.grab;
+            }
         }
         else {
-            GuiPanel((Rectangle){20, 30, 265, 300}, "Sterowanie sliderami");
+            GuiPanel((Rectangle){20, 30, 265, 350}, "Sterowanie sliderami");
             GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.slider_angles[0], -180, 360);
             GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.slider_angles[1], -90, 90);
             GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.slider_angles[2], -180, 45);
             GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.slider_angles[3], -90, 90);
             GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.slider_angles[4], -90, 90);
             GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.slider_angles[5], -90, 90);
+
+            if (GuiButton((Rectangle){30, 310, 70, 25}, "Toggle REC")) {
+                if (!recorder.isRecording) {
+                    recorder.StartRecording(robot.jointTransforms);
+                } else {
+                    recorder.StopRecording();
+                }
+            }
+            
+            if (GuiButton((Rectangle){30, 345, 70, 25}, "B")) {
+                blueLightOn = !blueLightOn;
+                        if (blueLightOn) {
+                            lights[2].color = (Color){80, 130, 230, 255}; // włącz
+                        } else {
+                            lights[2].color = (Color){0, 0, 0, 0}; // wyłącz
+                        }
+            }
+            
+            if (GuiButton((Rectangle){115, 310, 70, 25}, "Playback")) {
+                recorder.StartPlayback();
+            }
+            
+            if (GuiButton((Rectangle){115, 345, 70, 25}, "Y")) {
+                yellowLightOn = !yellowLightOn;
+                        if (yellowLightOn) {
+                            lights[1].color = (Color){128, 128, 40, 255}; // włącz
+                        } else {
+                            lights[1].color = (Color){0, 0, 0, 0}; // wyłącz
+                        }
+            }
+            
+            if (GuiButton((Rectangle){200, 310, 70, 25}, "Grab Toggle")) {
+                object.grab = !object.grab;
+            }
         }
         
         DrawText("KAROL - The BOKSER", 10, 10, 20, WHITE); //Tekst w lewym górnym rogu
