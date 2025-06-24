@@ -56,6 +56,12 @@ class Robot {
 public:
     float slider_angles[6] = {0}; //tablica do przechowywania kątów suwaków, nie używana obecnie
     bool use_slider_controls = true; //flaga do używania suwaków
+    const float pitch_prev = 0.0f; // zapamiętanie poprzedniego pitcha
+    const float roll_prev = 0.0f; // zapamiętanie poprzedniego rolla
+    const float rollArm_prev = 0.0f; // zapamiętanie poprzedniego rollArm
+    const float wrist_A_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_A_Rotation
+    const float wrist_B_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_B_Rotation
+    const float wrist_C_Rotation_prev = 0.0f; // zapamiętanie poprzedniego wrist_C_Rotation
 
     
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
@@ -192,10 +198,12 @@ public:
 
         slider_angles[0] = pitch;    
         slider_angles[1] = roll;
-        slider_angles[2] = rollArm; // W S
-        slider_angles[3] = wrist_A_Rotation; // A D
-        slider_angles[4] = wrist_B_Rotation; // I K
-        slider_angles[5] = wrist_C_Rotation; // J L
+        slider_angles[2] = rollArm; 
+        slider_angles[3] = wrist_A_Rotation; 
+        slider_angles[4] = wrist_B_Rotation; 
+        slider_angles[5] = wrist_C_Rotation; 
+
+        
 
 
         // Debugowanie, wypisuje macierze w terminalu

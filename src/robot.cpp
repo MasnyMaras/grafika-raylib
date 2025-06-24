@@ -187,93 +187,70 @@ int main() {
             EndMode3D();            // i ryswoanie 3D
 
         //rysowanie GUI
-        if (robot.use_slider_controls) {
-            GuiPanel((Rectangle){20, 30, 265, 350}, "Sterowanie sliderami");
-            GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.slider_angles[0], -180, 360);
-            GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.slider_angles[1], -90, 90);
-            GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.slider_angles[2], -180, 45);
-            GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.slider_angles[3], -90, 90);
-            GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.slider_angles[4], -90, 90);
-            GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.slider_angles[5], -90, 90);
+        GuiPanel((Rectangle){20, 30, 265, 350}, "Sterowanie sliderami");
+        GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.slider_angles[0], -180, 360);
+        GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.slider_angles[1], -90, 90);
+        GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.slider_angles[2], -180, 45);
+        GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.slider_angles[3], -90, 90);
+        GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.slider_angles[4], -90, 90);
+        GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.slider_angles[5], -90, 90);
 
-            if (GuiButton((Rectangle){30, 310, 70, 25}, "Toggle REC")) {
-                if (!recorder.isRecording) {
-                    recorder.StartRecording(robot.jointTransforms);
-                } else {
-                    recorder.StopRecording();
-                }
-            }
-            
-            if (GuiButton((Rectangle){30, 345, 70, 25}, "B")) {
-                blueLightOn = !blueLightOn;
-                        if (blueLightOn) {
-                            lights[2].color = (Color){80, 130, 230, 255}; // włącz
-                        } else {
-                            lights[2].color = (Color){0, 0, 0, 0}; // wyłącz
-                        }
-            }
-            
-            if (GuiButton((Rectangle){115, 310, 70, 25}, "Playback")) {
-                recorder.StartPlayback();
-            }
-            
-            if (GuiButton((Rectangle){115, 345, 70, 25}, "Y")) {
-                yellowLightOn = !yellowLightOn;
-                        if (yellowLightOn) {
-                            lights[1].color = (Color){128, 128, 40, 255}; // włącz
-                        } else {
-                            lights[1].color = (Color){0, 0, 0, 0}; // wyłącz
-                        }
-            }
-            
-            if (GuiButton((Rectangle){200, 310, 70, 25}, "Grab Toggle")) {
-                object.grab = !object.grab;
+
+        // TODO: zapisanie poprzedniej wartości przy naciśnięciu LPM i ewentualny powrót do tego
+        robot.pitch = robot.slider_angles[0];
+        if (robot.IsAboveGround(robot.jointTransforms[6], object.grab)) {
+            robot.rollArm = robot.slider_angles[2];
+            robot.wrist_A_Rotation = robot.slider_angles[3];
+            robot.wrist_B_Rotation = robot.slider_angles[4];
+            robot.wrist_C_Rotation = robot.slider_angles[5];
+            robot.roll = robot.slider_angles[1];
+        } else{
+            // Jeśli końcówka robota jest poniżej podłoża, resetujemy wartości
+            robot.rollArm = robot.rollArm_prev;
+            robot.wrist_A_Rotation = robot.wrist_A_Rotation_prev;
+            robot.wrist_B_Rotation = robot.wrist_B_Rotation_prev;
+            robot.wrist_C_Rotation = robot.wrist_C_Rotation_prev;
+            robot.pitch = robot.pitch_prev;
+            robot.roll = robot.roll_prev;
+        }
+        robot.Update();
+
+        if (GuiButton((Rectangle){30, 310, 70, 25}, "Toggle REC")) {
+            if (!recorder.isRecording) {
+                recorder.StartRecording(robot.jointTransforms);
+            } else {
+                recorder.StopRecording();
             }
         }
-        else {
-            GuiPanel((Rectangle){20, 30, 265, 350}, "Sterowanie sliderami");
-            GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.slider_angles[0], -180, 360);
-            GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.slider_angles[1], -90, 90);
-            GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.slider_angles[2], -180, 45);
-            GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.slider_angles[3], -90, 90);
-            GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.slider_angles[4], -90, 90);
-            GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.slider_angles[5], -90, 90);
-
-            if (GuiButton((Rectangle){30, 310, 70, 25}, "Toggle REC")) {
-                if (!recorder.isRecording) {
-                    recorder.StartRecording(robot.jointTransforms);
-                } else {
-                    recorder.StopRecording();
-                }
-            }
             
-            if (GuiButton((Rectangle){30, 345, 70, 25}, "B")) {
-                blueLightOn = !blueLightOn;
-                        if (blueLightOn) {
-                            lights[2].color = (Color){80, 130, 230, 255}; // włącz
-                        } else {
-                            lights[2].color = (Color){0, 0, 0, 0}; // wyłącz
-                        }
-            }
-            
-            if (GuiButton((Rectangle){115, 310, 70, 25}, "Playback")) {
-                recorder.StartPlayback();
-            }
-            
-            if (GuiButton((Rectangle){115, 345, 70, 25}, "Y")) {
-                yellowLightOn = !yellowLightOn;
-                        if (yellowLightOn) {
-                            lights[1].color = (Color){128, 128, 40, 255}; // włącz
-                        } else {
-                            lights[1].color = (Color){0, 0, 0, 0}; // wyłącz
-                        }
-            }
-            
-            if (GuiButton((Rectangle){200, 310, 70, 25}, "Grab Toggle")) {
-                object.grab = !object.grab;
-            }
+        if (GuiButton((Rectangle){30, 345, 70, 25}, "B")) {
+            blueLightOn = !blueLightOn;
+                    if (blueLightOn) {
+                        lights[2].color = (Color){80, 130, 230, 255}; // włącz
+                    } else {
+                        lights[2].color = (Color){0, 0, 0, 0}; // wyłącz
+                    }
         }
-        
+            
+        if (GuiButton((Rectangle){115, 310, 70, 25}, "Playback")) {
+            recorder.StartPlayback();
+        }
+            
+        if (GuiButton((Rectangle){115, 345, 70, 25}, "Y")) {
+            yellowLightOn = !yellowLightOn;
+                    if (yellowLightOn) {
+                        lights[1].color = (Color){128, 128, 40, 255}; // włącz
+                    } else {
+                        lights[1].color = (Color){0, 0, 0, 0}; // wyłącz
+                    }
+        }
+            
+        if (GuiButton((Rectangle){200, 310, 70, 25}, "Grab Toggle")) {
+            object.grab = !object.grab;
+        }            if (GuiButton((Rectangle){200, 345, 70, 25}, "Chwytak")) {
+                
+       }
+
         DrawText("KAROL - The BOKSER", 10, 10, 20, WHITE); //Tekst w lewym górnym rogu
         EndDrawing();
     }
