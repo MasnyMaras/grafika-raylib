@@ -65,14 +65,14 @@ class Object {
         spherePos = {20.0f, 0.0f, 20.0f};
     }
 
-    void Update(Matrix endEffectorPos) {
+    void Update(Matrix endEffectorPos, bool gripperType) {
         if (grab) {
             // Jeśli jeszcze nic nie trzymamy, sprawdź co można chwycić
             if (!grabbingCube && !grabbingSphere) {
                 if (IsNearCube(endEffectorPos)) {
                     grabbingCube = true;  // Zacznij trzymać kostkę
                 }
-                else if (IsNearSphere(endEffectorPos)) {
+                else if (IsNearSphere(endEffectorPos) && gripperType) {
                     grabbingSphere = true;  // Zacznij trzymać kulę
                 }
             }
@@ -83,7 +83,7 @@ class Object {
                 cube.SetTransform(cubeTransform);
                 cubePos = {cubeTransform.m12, cubeTransform.m13, cubeTransform.m14};
             }
-            if (grabbingSphere) {
+            if (grabbingSphere && gripperType) {
                 Matrix sphereTransform = MatrixMultiply(MatrixTranslate(0.0f, 1.8f, 0.0f), endEffectorPos); 
                 sphere.SetTransform(sphereTransform);
                 spherePos = {sphereTransform.m12, sphereTransform.m13, sphereTransform.m14};

@@ -224,6 +224,7 @@ public:
         Matrix wristBCorrection = MatrixMultiply(MatrixRotateX(DEG2RAD *-90.0f), MatrixRotateZ(DEG2RAD *90.0f)); 
         wrist_B.SetTransform(MatrixMultiply(wristBCorrection, transforms[5])); 
         wrist_C.SetTransform(transforms[6]);
+        magnetic_wrist.SetTransform(transforms[6]);
 
         if (clampsOpen) {
             clamps_A.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, 2.5f), transforms[6])); 

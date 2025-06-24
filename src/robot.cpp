@@ -88,7 +88,7 @@ int main() {
             robot.ToggleClamps();
         }
         robot.Update();  // Normalne update
-        object.Update(robot.jointTransforms[6]);
+        object.Update(robot.jointTransforms[6], gripperType);
         }
         else if (recorder.currentMode == RECORDING_MODE) {
             robot.HandleInput(object.IsGrabbed());  // Pozwól na ruch podczas nagrywania
@@ -97,7 +97,7 @@ int main() {
                 robot.ToggleClamps();
             }
             robot.Update();
-            object.Update(robot.jointTransforms[6]);
+            object.Update(robot.jointTransforms[6], gripperType);
             recorder.Update(robot.jointTransforms, object.grab);
         }
         else if (recorder.currentMode == PLAYBACK_MODE) {
@@ -109,7 +109,7 @@ int main() {
                 object.grab = currentGrabState;
                 robot.clampsOpen = !currentGrabState;
                 //object.grab = recorder.GetCurrentGrabState();
-                object.Update(currentFrame[6]);
+                object.Update(currentFrame[6], gripperType);
             }
             recorder.UpdatePlayback();  // DODAJ - aktualizuj indeks odtwarzania
         }
