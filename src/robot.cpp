@@ -189,21 +189,21 @@ int main() {
         //rysowanie GUI
         if (robot.use_slider_controls) {
             GuiPanel((Rectangle){20, 30, 265, 300}, "Sterowanie sliderami");
-            GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.pitch, -180, 360);
-            GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.roll, -90, 90);
-            GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.rollArm, -180, 45);
-            GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.wrist_A_Rotation, -90, 90);
-            GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.wrist_B_Rotation, -90, 90);
-            GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.wrist_C_Rotation, -90, 90);
+            GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.slider_angles[0], -180, 360);
+            GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.slider_angles[1], -90, 90);
+            GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.slider_angles[2], -180, 45);
+            GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.slider_angles[3], -90, 90);
+            GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.slider_angles[4], -90, 90);
+            GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.slider_angles[5], -90, 90);
         }
         else {
             GuiPanel((Rectangle){20, 30, 265, 300}, "Sterowanie sliderami");
-            GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.pitch, -180, 360);
-            GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.roll, -90, 90);
-            GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.rollArm, -180, 45);
-            GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.wrist_A_Rotation, -90, 90);
-            GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.wrist_B_Rotation, -90, 90);
-            GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.wrist_C_Rotation, -90, 90);
+            GuiSliderBar((Rectangle){30, 70, 200, 20}, NULL, "Pitch", &robot.slider_angles[0], -180, 360);
+            GuiSliderBar((Rectangle){30, 110, 200, 20}, NULL, "Roll", &robot.slider_angles[1], -90, 90);
+            GuiSliderBar((Rectangle){30, 150, 200, 20}, NULL, "Roll Arm", &robot.slider_angles[2], -180, 45);
+            GuiSliderBar((Rectangle){30, 190, 200, 20}, NULL, "Wrist A", &robot.slider_angles[3], -90, 90);
+            GuiSliderBar((Rectangle){30, 230, 200, 20}, NULL, "Wrist B", &robot.slider_angles[4], -90, 90);
+            GuiSliderBar((Rectangle){30, 270, 200, 20}, NULL, "Wrist C", &robot.slider_angles[5], -90, 90);
         }
         
         DrawText("KAROL - The BOKSER", 10, 10, 20, WHITE); //Tekst w lewym górnym rogu

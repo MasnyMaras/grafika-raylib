@@ -54,7 +54,7 @@ public:
 //reprezentacja całego robota
 class Robot {
 public:
-    float slider_angles[7] = {0}; //tablica do przechowywania kątów suwaków, nie używana obecnie
+    float slider_angles[6] = {0}; //tablica do przechowywania kątów suwaków, nie używana obecnie
     bool use_slider_controls = true; //flaga do używania suwaków
 
     
@@ -188,7 +188,15 @@ public:
         jointTransforms[3] = MatrixMultiply(T_34, jointTransforms[2]); // T_04
         jointTransforms[4] = MatrixMultiply(T_45, jointTransforms[3]); // T_05 
         jointTransforms[5] = MatrixMultiply(T_56, jointTransforms[4]); // T_06  
-        jointTransforms[6] = MatrixMultiply(T_67, jointTransforms[5]); // T_07                     
+        jointTransforms[6] = MatrixMultiply(T_67, jointTransforms[5]); // T_07      
+
+        slider_angles[0] = pitch;    
+        slider_angles[1] = roll;
+        slider_angles[2] = rollArm; // W S
+        slider_angles[3] = wrist_A_Rotation; // A D
+        slider_angles[4] = wrist_B_Rotation; // I K
+        slider_angles[5] = wrist_C_Rotation; // J L
+
 
         // Debugowanie, wypisuje macierze w terminalu
         //PrintMatrix(jointTransforms[1], "jointTransforms[1]");
