@@ -62,12 +62,14 @@ int main() {
     Mesh groundMesh = GenMeshPlane(200.0f, 200.0f, 1, 1);
     Model groundModel = LoadModelFromMesh(groundMesh);
     Vector3 groundPosition = { 0.0f, 0.0f, 0.0f };
-    Matrix endEffectorTransform = MatrixIdentity();
-
+    bool gripperType = true;    // true to szczypce false to magnes
 
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
+        if (IsKeyPressed(KEY_M)) {
+            gripperType = !gripperType; // Przełącz typ chwytaka
+        }
         // DODAJ OBSŁUGĘ KLAWISZY NAGRYWANIA:
         if (IsKeyPressed(KEY_R)) {
             if (recorder.currentMode == NORMAL_MODE) {
@@ -84,14 +86,20 @@ int main() {
         if (recorder.currentMode == NORMAL_MODE) {
         robot.HandleInput(object.IsGrabbed());
         object.Input();
+        if (IsKeyPressed(KEY_SPACE)) {
+            robot.ToggleClamps();
+        }
         robot.Update();  // Normalne update
-        object.Update(robot.jointTransforms[6]);
+        object.Update(robot.jointTransforms[6], gripperType);
         }
         else if (recorder.currentMode == RECORDING_MODE) {
             robot.HandleInput(object.IsGrabbed());  // Pozwól na ruch podczas nagrywania
             object.Input();
+            if (IsKeyPressed(KEY_SPACE)) {
+                robot.ToggleClamps();
+            }
             robot.Update();
-            object.Update(robot.jointTransforms[6]);
+            object.Update(robot.jointTransforms[6], gripperType);
             recorder.Update(robot.jointTransforms, object.grab);
         }
         else if (recorder.currentMode == PLAYBACK_MODE) {
@@ -99,8 +107,11 @@ int main() {
             Matrix* currentFrame = recorder.GetCurrentPlaybackFrame();
             if (currentFrame) {
                 robot.SetFromTransforms(currentFrame);
-                object.grab = recorder.GetCurrentGrabState();
-                object.Update(currentFrame[6]);
+                bool currentGrabState = recorder.GetCurrentGrabState();
+                object.grab = currentGrabState;
+                robot.clampsOpen = !currentGrabState;
+                //object.grab = recorder.GetCurrentGrabState();
+                object.Update(currentFrame[6], gripperType);
             }
             recorder.UpdatePlayback();  // DODAJ - aktualizuj indeks odtwarzania
         }
@@ -163,7 +174,7 @@ int main() {
 
                 
                 BeginShaderMode(shader);    //zaczynamy rysowaniez shaderami
-                    robot.Draw();       //rysujemy robota
+                    robot.Draw(gripperType);       //rysujemy robota
                     object.Draw();        //rysujemy sześcian //teraz dodałem
                     DrawModel(groundModel, groundPosition, 1.0f, {198, 209, 252}); //rysujemy podłoże
                     if (IsKeyPressed(KEY_B)) {
