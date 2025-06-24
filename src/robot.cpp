@@ -80,13 +80,13 @@ int main() {
         }
 
         if (recorder.currentMode == NORMAL_MODE) {
-        robot.HandleInput();
+        robot.HandleInput(object.IsGrabbed());
         object.Input();
         robot.Update();  // Normalne update
         object.Update(robot.jointTransforms[6]);
         }
         else if (recorder.currentMode == RECORDING_MODE) {
-            robot.HandleInput();  // Pozwól na ruch podczas nagrywania
+            robot.HandleInput(object.IsGrabbed());  // Pozwól na ruch podczas nagrywania
             object.Input();
             robot.Update();
             object.Update(robot.jointTransforms[6]);
