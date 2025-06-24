@@ -5,6 +5,7 @@
 #define RLIGHTS_IMPLEMENTATION
 #include "robot.h"
 #include "object.h"
+#include "record.h"
 #if defined(PLATFORM_DESKTOP)
     #define GLSL_VERSION 330
 #else
@@ -52,6 +53,8 @@ int main() {
     Robot robot(shader);
     Object object(shader); //przykładowy obiekt do testowania
     object.Initialize(); //inicjalizacja sześcianu
+    //Deklaracja recordera
+    MovementRecorder recorder;
 
     //generowanie podłoża
     Mesh groundMesh = GenMeshPlane(200.0f, 200.0f, 1, 1);
@@ -63,11 +66,50 @@ int main() {
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
-        robot.HandleInput();    //klawisze do sterowania
-        object.Input(); //klawisz do chwytania sześcianu
-        robot.Update();     //aktualizujemy pozycje i obrot robota
-            endEffectorTransform = robot.jointTransforms[6]; //aktualizujemy transformację końcówki robota
-        object.Update(endEffectorTransform);
+        // DODAJ OBSŁUGĘ KLAWISZY NAGRYWANIA:
+        if (IsKeyPressed(KEY_R)) {
+            if (recorder.currentMode == NORMAL_MODE) {
+                recorder.StartRecording(robot.jointTransforms);
+            } else if (recorder.currentMode == RECORDING_MODE) {
+                recorder.StopRecording();
+            }
+        }
+        
+        if (IsKeyPressed(KEY_P) && recorder.currentMode == NORMAL_MODE) {
+            recorder.StartPlayback();
+        }
+
+        if (recorder.currentMode == NORMAL_MODE) {
+        robot.HandleInput();
+        object.Input();
+        robot.Update();  // Normalne update
+        object.Update(robot.jointTransforms[6]);
+        }
+        else if (recorder.currentMode == RECORDING_MODE) {
+            robot.HandleInput();  // Pozwól na ruch podczas nagrywania
+            object.Input();
+            robot.Update();
+            object.Update(robot.jointTransforms[6]);
+            recorder.Update(robot.jointTransforms, object.grab);
+        }
+        else if (recorder.currentMode == PLAYBACK_MODE) {
+            // Odtwarzaj sekwencję
+            Matrix* currentFrame = recorder.GetCurrentPlaybackFrame();
+            if (currentFrame) {
+                robot.SetFromTransforms(currentFrame);
+                object.grab = recorder.GetCurrentGrabState();
+                object.Update(currentFrame[6]);
+            }
+            recorder.UpdatePlayback();  // DODAJ - aktualizuj indeks odtwarzania
+        }
+
+        
+        //To było wcześniej
+        //robot.HandleInput();    //klawisze do sterowania
+        //object.Input(); //klawisz do chwytania sześcianu
+        //robot.Update();     //aktualizujemy pozycje i obrot robota
+        //endEffectorTransform = robot.jointTransforms[6]; //aktualizujemy transformację końcówki robota
+        //object.Update(endEffectorTransform);
         UpdateLightValues(shader, lights[0]);   //akrualizujemy światło
         UpdateLightValues(shader, lights[1]);   //akrualizujemy światło
         UpdateLightValues(shader, lights[2]);   //akrualizujemy światło
