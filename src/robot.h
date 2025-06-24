@@ -54,6 +54,8 @@ public:
 //reprezentacja całego robota
 class Robot {
 public:
+
+    bool clampsOpen = true;
     
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
     RobotPart waist;
@@ -63,6 +65,9 @@ public:
     RobotPart wrist_A;
     RobotPart wrist_B; 
     RobotPart wrist_C;
+    RobotPart clamps_A;
+    RobotPart clamps_B;
+    RobotPart magnetic_wrist; // element chwytaka, "magnes"
     
 
     float pitch = 0.0f;     // Y-Axis (obrót)
@@ -105,15 +110,6 @@ public:
         };
     }
 
-    void PrintMatrix(Matrix mat, const char* name) {        // funkcja testowa do wypisywania macierzy
-        std::cout << name << ":" << std::endl;
-        std::cout << "[" << mat.m0 << ", " << mat.m4 << ", " << mat.m8 << ", " << mat.m12 << "]" << std::endl;
-        std::cout << "[" << mat.m1 << ", " << mat.m5 << ", " << mat.m9 << ", " << mat.m13 << "]" << std::endl;
-        std::cout << "[" << mat.m2 << ", " << mat.m6 << ", " << mat.m10 << ", " << mat.m14 << "]" << std::endl;
-        std::cout << "[" << mat.m3 << ", " << mat.m7 << ", " << mat.m11 << ", " << mat.m15 << "]" << std::endl;
-        std::cout << std::endl;
-    }
-
     //konstrutor robota - tworzy siatki elementów, a potem całe modele
     Robot(Shader shader) {
         base = RobotPart("src/Pieza1_new.obj", shader, basepos);
@@ -123,8 +119,11 @@ public:
         wrist_A = RobotPart("src/Pieza5.obj", shader, wrist_A_Pos); // pierwszy element chwytaka
         wrist_B = RobotPart("src/Pieza6.obj", shader, wrist_B_Pos); // drugi element chwytaka, "mały krzyżyk"
         wrist_C = RobotPart("src/Pieza8.obj", shader, wrist_C_Pos); // trzeci element chwytaka, "przyssawka"
+        clamps_A = RobotPart("src/Pieza9.obj", shader, basepos);
+        clamps_B = RobotPart("src/Pieza9.obj", shader, basepos);
+        magnetic_wrist = RobotPart("src/Magnetic.obj", shader, basepos); // element chwytaka, "magnes"
     }
-    //funkcja to praktycznie 1 do 1 to samo co było poprzednio przed główną pętlą while
+
     void Update() {
         
         // Układ zerowy
@@ -187,10 +186,6 @@ public:
         jointTransforms[5] = MatrixMultiply(T_56, jointTransforms[4]); // T_06  
         jointTransforms[6] = MatrixMultiply(T_67, jointTransforms[5]); // T_07                     
 
-        // Debugowanie, wypisuje macierze w terminalu
-        //PrintMatrix(jointTransforms[1], "jointTransforms[1]");
-        //PrintMatrix(jointTransforms[2], "jointTransforms[2]");
-
         base.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD * -90.0f), MatrixTranslate(0.0f, -24.0f, 0.0f)));    // -24 to odległość poniżej zera aby baza była pod biodrem
         waist.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD *90.0f), jointTransforms[1]));
         shoulder.SetTransform(MatrixMultiply(MatrixTranslate(-17.0f, 0.0f, 0.0f), jointTransforms[2])); 
@@ -203,6 +198,17 @@ public:
         wrist_B.SetTransform(MatrixMultiply(wristBCorrection, jointTransforms[5])); 
         // TO BYŁO PRZED wristBCorr.. wtedy alfa [5] byla 180 // wrist_B.SetTransform(MatrixMultiply(MatrixRotateY(DEG2RAD *90.0f), jointTransforms[5]));
         wrist_C.SetTransform(jointTransforms[6]);
+        magnetic_wrist.SetTransform(jointTransforms[6]); 
+        
+        if (clampsOpen) {
+            // Pozycja otwarta
+            clamps_A.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, 2.5f), jointTransforms[6])); 
+            clamps_B.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, -2.5f), jointTransforms[6])); 
+        } else {
+            // Pozycja zamknięta
+            clamps_A.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, 1.8f), jointTransforms[6])); 
+            clamps_B.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, -1.8f), jointTransforms[6])); 
+        }
 
     }
 
@@ -218,10 +224,23 @@ public:
         Matrix wristBCorrection = MatrixMultiply(MatrixRotateX(DEG2RAD *-90.0f), MatrixRotateZ(DEG2RAD *90.0f)); 
         wrist_B.SetTransform(MatrixMultiply(wristBCorrection, transforms[5])); 
         wrist_C.SetTransform(transforms[6]);
+
+        if (clampsOpen) {
+            clamps_A.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, 2.5f), transforms[6])); 
+            clamps_B.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, -2.5f), transforms[6])); 
+        } else {
+            clamps_A.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, 1.8f), transforms[6])); 
+            clamps_B.SetTransform(MatrixMultiply(MatrixTranslate(0.0f, 2.0f, -1.8f), transforms[6])); 
+        }
+    }
+
+    // Zmiana stanu zacisków
+    void ToggleClamps() {
+        clampsOpen = !clampsOpen;
     }
 
     //rysowanie elementów
-    void Draw() {
+    void Draw(bool gripperType) {
         base.Draw(LIGHTGRAY);
         waist.Draw(LIGHTGRAY);
         //waist.DrawAxes(30.0f);
@@ -233,8 +252,14 @@ public:
         //wrist_A.DrawAxes(30.0f);
         wrist_B.Draw(LIGHTGRAY);
         //wrist_B.DrawAxes(30.0f);
-        wrist_C.Draw(LIGHTGRAY);
-        // wrist_C.DrawAxes(30.0f);
+        if(gripperType) {
+            wrist_C.Draw(LIGHTGRAY); 
+            clamps_A.Draw(LIGHTGRAY); 
+            clamps_B.Draw(LIGHTGRAY);
+        } else {
+            magnetic_wrist.Draw(LIGHTGRAY); // rysowanie elementu chwytaka, "magnes"
+        }
+        
     }
     //unloadowanie elementów
     void Unload() {
@@ -245,10 +270,13 @@ public:
         wrist_A.Unload();
         wrist_B.Unload();
         wrist_C.Unload();
+        clamps_A.Unload();
+        clamps_B.Unload();
+        magnetic_wrist.Unload();
     }
         
     bool IsAboveGround(Matrix transform, bool grab, float minY = -23.0f) {
-        if(grab) minY += 3.0f;
+        transform = (MatrixMultiply(MatrixTranslate(0.0f, 3.1f, 0.0f), transform));
         Vector3 worldPos = Vector3Transform(Vector3Zero(), transform);
         return worldPos.y >= minY;
     }
@@ -263,7 +291,7 @@ public:
                 pitch -= 1.0f;}
             }
         if (IsKeyDown(KEY_W)) {
-            if (roll > -90.0f) { // ograniczenie do -90 stopni
+            if (roll > -135.0f) { // ograniczenie do -135 stopni
                 roll -= 1.0f;
             }
             Update();
