@@ -5,6 +5,7 @@
 #define RLIGHTS_IMPLEMENTATION
 #include "robot.h"
 #include "object.h"
+#include "record.h"
 #if defined(PLATFORM_DESKTOP)
     #define GLSL_VERSION 330
 #else
@@ -14,8 +15,8 @@
 int main() {
 
     //rozmiar okna
-    const int screenWidth = 1920;
-    const int screenHeight = 1080;
+    const int screenWidth = 1500;
+    const int screenHeight = 800;
 
     // Włączenie antyaliasingu
     SetConfigFlags(FLAG_MSAA_4X_HINT);
@@ -52,6 +53,8 @@ int main() {
     Robot robot(shader);
     Object object(shader); //przykładowy obiekt do testowania
     object.Initialize(); //inicjalizacja sześcianu
+    //Deklaracja recordera
+    MovementRecorder recorder;
 
     //generowanie podłoża
     Mesh groundMesh = GenMeshPlane(200.0f, 200.0f, 1, 1);
@@ -63,11 +66,50 @@ int main() {
     SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
-        robot.HandleInput(object.IsGrabbed());    //klawisze do sterowania
-        object.Input(); //klawisz do chwytania sześcianu
-        robot.Update();     //aktualizujemy pozycje i obrot robota
-            endEffectorTransform = robot.jointTransforms[6]; //aktualizujemy transformację końcówki robota
-        object.Update(endEffectorTransform);
+        // DODAJ OBSŁUGĘ KLAWISZY NAGRYWANIA:
+        if (IsKeyPressed(KEY_R)) {
+            if (recorder.currentMode == NORMAL_MODE) {
+                recorder.StartRecording(robot.jointTransforms);
+            } else if (recorder.currentMode == RECORDING_MODE) {
+                recorder.StopRecording();
+            }
+        }
+        
+        if (IsKeyPressed(KEY_P) && recorder.currentMode == NORMAL_MODE) {
+            recorder.StartPlayback();
+        }
+
+        if (recorder.currentMode == NORMAL_MODE) {
+        robot.HandleInput();
+        object.Input();
+        robot.Update();  // Normalne update
+        object.Update(robot.jointTransforms[6]);
+        }
+        else if (recorder.currentMode == RECORDING_MODE) {
+            robot.HandleInput();  // Pozwól na ruch podczas nagrywania
+            object.Input();
+            robot.Update();
+            object.Update(robot.jointTransforms[6]);
+            recorder.Update(robot.jointTransforms, object.grab);
+        }
+        else if (recorder.currentMode == PLAYBACK_MODE) {
+            // Odtwarzaj sekwencję
+            Matrix* currentFrame = recorder.GetCurrentPlaybackFrame();
+            if (currentFrame) {
+                robot.SetFromTransforms(currentFrame);
+                object.grab = recorder.GetCurrentGrabState();
+                object.Update(currentFrame[6]);
+            }
+            recorder.UpdatePlayback();  // DODAJ - aktualizuj indeks odtwarzania
+        }
+
+        
+        //To było wcześniej
+        //robot.HandleInput();    //klawisze do sterowania
+        //object.Input(); //klawisz do chwytania sześcianu
+        //robot.Update();     //aktualizujemy pozycje i obrot robota
+        //endEffectorTransform = robot.jointTransforms[6]; //aktualizujemy transformację końcówki robota
+        //object.Update(endEffectorTransform);
         UpdateLightValues(shader, lights[0]);   //akrualizujemy światło
         UpdateLightValues(shader, lights[1]);   //akrualizujemy światło
         UpdateLightValues(shader, lights[2]);   //akrualizujemy światło
@@ -115,7 +157,6 @@ int main() {
                     DrawLine3D((Vector3){ i * spacing, gridY, -gridSize * spacing },(Vector3){ i * spacing, gridY,  gridSize * spacing },BLACK);
                     // Linie wzdłuż osi X
                     DrawLine3D((Vector3){ -gridSize * spacing, gridY, i * spacing },(Vector3){  gridSize * spacing, gridY, i * spacing },BLACK);
-                    
                 }
                 BeginShaderMode(shader);    //zaczynamy rysowaniez shaderami
                     robot.Draw();       //rysujemy robota
@@ -140,6 +181,7 @@ int main() {
                     }
                 EndShaderMode();    //kończymy rysowanie z shaderami
             EndMode3D();            // i ryswoanie 3D
+
         DrawText("KAROL - The BOKSER", 10, 10, 20, WHITE); //Tekst w lewym górnym rogu
         EndDrawing();
     }
