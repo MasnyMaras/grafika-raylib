@@ -202,6 +202,20 @@ public:
 
     }
 
+    void SetFromTransforms(Matrix* transforms) {
+        // Skopiuj linie 190-201 ale użyj przekazanych transforms zamiast jointTransforms
+        base.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD * -90.0f), MatrixTranslate(0.0f, -24.0f, 0.0f)));
+        waist.SetTransform(MatrixMultiply(MatrixRotateX(DEG2RAD *90.0f), transforms[1]));
+        shoulder.SetTransform(MatrixMultiply(MatrixTranslate(-17.0f, 0.0f, 0.0f), transforms[2])); 
+        Matrix armToWristCorrection = MatrixMultiply(MatrixRotateX(DEG2RAD *90.0f), MatrixTranslate(0.0f, -1.5f, 0.0f));
+        arm.SetTransform(MatrixMultiply(armToWristCorrection, transforms[3]));
+        Matrix wristAtoBCorrection = MatrixMultiply(MatrixRotateX(DEG2RAD *90.0f), MatrixTranslate(0.0f, -2.36f, 0.0f));
+        wrist_A.SetTransform(MatrixMultiply(wristAtoBCorrection, transforms[4])); 
+        Matrix wristBCorrection = MatrixMultiply(MatrixRotateX(DEG2RAD *-90.0f), MatrixRotateZ(DEG2RAD *90.0f)); 
+        wrist_B.SetTransform(MatrixMultiply(wristBCorrection, transforms[5])); 
+        wrist_C.SetTransform(transforms[6]);
+    }
+
     //rysowanie elementów
     void Draw() {
         base.Draw(LIGHTGRAY);
