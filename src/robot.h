@@ -4,7 +4,9 @@
 #include "raylib.h"
 #include "raymath.h"
 #include "rlights.h"
+#include "object.h"
 #include <iostream>
+
 
 //klasa odpowiedzialna za generowanie, transformacje, rysowanie i unloadowanie poszczególnych części
 class RobotPart {
@@ -52,6 +54,7 @@ public:
 //reprezentacja całego robota
 class Robot {
 public:
+    
     //definiowanie części robota o konkretnych atrybutach z klasy RobotPart
     RobotPart waist;
     RobotPart shoulder;
@@ -60,6 +63,7 @@ public:
     RobotPart wrist_A;
     RobotPart wrist_B; 
     RobotPart wrist_C;
+    
 
     float pitch = 0.0f;     // Y-Axis (obrót)
     float roll = 0.0f;      // X-Axis (podnoszenie ramienia)
@@ -232,7 +236,6 @@ public:
         wrist_C.Draw(LIGHTGRAY);
         // wrist_C.DrawAxes(30.0f);
     }
-
     //unloadowanie elementów
     void Unload() {
         waist.Unload();
@@ -243,51 +246,124 @@ public:
         wrist_B.Unload();
         wrist_C.Unload();
     }
+        
+    bool IsAboveGround(Matrix transform, bool grab, float minY = -23.0f) {
+        if(grab) minY += 3.0f;
+        Vector3 worldPos = Vector3Transform(Vector3Zero(), transform);
+        return worldPos.y >= minY;
+    }
     //inputy do sterowania
-    void HandleInput() {
-        // if (IsKeyDown(KEY_A)){
-        //     if(pitch<=180) pitch += 1.0f;} 
-        // if (IsKeyDown(KEY_D)){
-        //     if(pitch>=-140) pitch -= 1.0f;}
-        // if (IsKeyDown(KEY_W)){
-        //     if(roll<=133) roll += 1.0f;}
-        // if (IsKeyDown(KEY_S)){;
-        //     if(roll>=-133) roll -= 1.0f;}
-        // if (IsKeyDown(KEY_UP)){
-        //     if(roll<=142) rollArm += 1.0f;}
-        // if (IsKeyDown(KEY_DOWN)){
-        //      if(rollArm!=-270)rollArm -= 1.0f;}
-        // if (IsKeyDown(KEY_RIGHT)){
-        //     if(wristRotation<=90) wristRotation += 1.0f;}
-        // if (IsKeyDown(KEY_LEFT)){
-        //     if(wristRotation>=-90) wristRotation -= 1.0f;}
-        // 
-         if (IsKeyDown(KEY_A)){
-             pitch += 1.0f;} 
+    void HandleInput(bool grab) {
+        if (IsKeyDown(KEY_A)){
+            if(pitch < 360.0f){
+                pitch += 1.0f;}
+            } 
         if (IsKeyDown(KEY_D)){
-             pitch -= 1.0f;}
-        if (IsKeyDown(KEY_W)){  // pozmieniane w różnych miejscach plusy z minusami 
-            roll -= 1.0f;}
-        if (IsKeyDown(KEY_S)){;
-            roll += 1.0f;}
-        if (IsKeyDown(KEY_UP)){
-            rollArm -= 1.0f;}
-        if (IsKeyDown(KEY_DOWN)){
-             rollArm += 1.0f;}
-        if (IsKeyDown(KEY_RIGHT)){
-            wrist_A_Rotation -= 1.0f;}
-        if (IsKeyDown(KEY_LEFT)){
-            wrist_A_Rotation += 1.0f;}
-        if (IsKeyDown(KEY_I)){
-            wrist_B_Rotation -= 1.0f;} 
-        if (IsKeyDown(KEY_K)){
-            wrist_B_Rotation += 1.0f;}
-        if (IsKeyDown(KEY_J)){
-            wrist_C_Rotation += 1.0f;} 
-        if (IsKeyDown(KEY_L)){
-            wrist_C_Rotation -= 1.0f;}
+            if(pitch > -180.0f){
+                pitch -= 1.0f;}
+            }
+        if (IsKeyDown(KEY_W)) {
+            if (roll > -90.0f) { // ograniczenie do -90 stopni
+                roll -= 1.0f;
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                roll += 1.0f;
+                Update();
+            }
         }
-};
+        if (IsKeyDown(KEY_S)) {
+            if(roll < 90.0f) { // ograniczenie do 90 stopni
+                roll += 1.0f;
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                roll -= 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_UP)) {
+            if(rollArm > -180.0f) { // ograniczenie do -180 stopni
+                rollArm -= 1.0f;
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                rollArm += 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_DOWN)) {
+            if(rollArm < 45.0f) { // ograniczenie do 45 stopni
+                rollArm += 1.0f;
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                rollArm -= 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_RIGHT)){
+            if (wrist_A_Rotation > -90.0f) { // ograniczenie do -90 stopni
+                wrist_A_Rotation -= 1.0f;
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                wrist_A_Rotation += 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_LEFT)){
+            if (wrist_A_Rotation < 90.0f) { // ograniczenie do 90 stopni
+                wrist_A_Rotation += 1.0f;
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                wrist_A_Rotation -= 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_I)){
+            if( wrist_B_Rotation > -90.0f) { // ograniczenie do -90 stopni
+                wrist_B_Rotation -= 1.0f;
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                wrist_B_Rotation += 1.0f;
+                Update();
+            }
+        }
+        if (IsKeyDown(KEY_K)){
+            if( wrist_B_Rotation < 90.0f) { // ograniczenie do 90 stopni
+                wrist_B_Rotation += 1.0f;
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                wrist_B_Rotation -= 1.0f;
+                Update();
+            }
+        } 
+        if (IsKeyDown(KEY_J)){
+            if(wrist_C_Rotation < 90.0f){
+                wrist_C_Rotation += 1.0f; // ograniczenie do 90 stopni
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                wrist_C_Rotation -= 1.0f;
+                Update();
+            } 
+        }
+        if (IsKeyDown(KEY_L)){
+            if(wrist_C_Rotation > -90.0f){
+                wrist_C_Rotation -= 1.0f; // ograniczenie do -90 stopni
+            }
+            Update();
+            if (!IsAboveGround(jointTransforms[6], grab)) {
+                wrist_C_Rotation += 1.0f;
+                Update();
+            }
+        }
+    }
+};  
 
 
 #endif

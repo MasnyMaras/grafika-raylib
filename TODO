@@ -1,7 +1,7 @@
-1. Oświetlenie (OPENGL) - Oświetlenie zrobione, cieni nie ma, zostawiam na koniec bo jebania z tym bedzie
-2. Tekstury - chyba jakieś z neta ściągnąć i ogarnać w blenderze czy gdzieś idk 
-3. chwytaki - myśle że przynajmniej 3 
-4. stworzyć tego prymitywa do przenoszenia, myśle że jak różne chytaki to musi być odpowiedni obiekt do chwytaka (np jak przyssawka to dać jakąś szybę czy coś takiego płaskiego)
-5. suwaki do obrotu robota i możliwość wpisywania konkretnych wartości
-6. Przenoszenie przedmiotu sterując robotem (tryb nauki)
-7. Odtwarzanie zaprojektowanego ruchu
+1. chwytaki - myśle że przynajmniej 3 - SEBA
+2. stworzyć tego prymitywa do przenoszenia, myśle że jak różne chytaki to musi być odpowiedni obiekt do chwytaka (np jak przyssawka to dać jakąś szybę czy coś takiego płaskiego) - SEBA
+3. suwaki do obrotu robota i możliwość wpisywania konkretnych wartości -- Antek 
+4. Przenoszenie przedmiotu sterując robotem (tryb nauki) - zrobione ale musi to zapamietać i odtworzyć ruch - Antek
+5. Obiekt nie może przechodzić przez podłoge - Marek - DONE <3
+6. ograniczenia zakresu ruchu elementów (kąt) - Marek - DONE <3
+7. Sprawozdanie -- WSZYSCY

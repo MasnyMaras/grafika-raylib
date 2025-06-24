@@ -250,7 +250,7 @@ endif
 
 # Define include paths for required headers
 # NOTE: Several external required libraries (stb and others)
-INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external -I$(RAYLIB_PATH)/examples/shaders -I$(RAYLIB_PATH)/examples/shaders/resources -I$(RAYLIB_PATH)/examples/shaders/resources/shaders -I$(RAYLIB_PATH)/examples/shaders/resources/shaders/glsl330
+INCLUDE_PATHS = -I. -I$(RAYLIB_PATH)/src -I$(RAYLIB_PATH)/src/external -I$(RAYLIB_PATH)/examples/shaders -I$(RAYLIB_PATH)/examples/shaders/resources -I$(RAYLIB_PATH)/examples/shaders/resources/shaders -I$(RAYLIB_PATH)/examples/shaders/resources/shaders/glsl330 -I$(RAYLIB_PATH)/examples/shapes
 ifneq ($(wildcard /opt/homebrew/include/.*),)
     INCLUDE_PATHS += -I/opt/homebrew/include
 endif
